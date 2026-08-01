@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planner Semanal - Dashboard Pro</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%235B6EF1%22/%3E%20%3Ctext%20x%3D%2232%22%20y%3D%2244%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22800%22%20fill%3D%22%23FFFFFF%22%20text-anchor%3D%22middle%22%3E%3B%29%3C/text%3E%20%3C/svg%3E">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore-compat.js"></script>
+  <style>
+    body { margin: 0; padding: 0; background: #F4F7F9; overflow: hidden; }
+    textarea::placeholder, input::placeholder { color: #94A3B8; }
+
+    /* --- CLASES RESPONSIVE AÑADIDAS --- */
+    @media (max-width: 768px) {
+      body { overflow: auto !important; }
+      .app-wrapper { flex-direction: column !important; height: auto !important; min-height: 100vh !important; overflow: visible !important; }
+      .sidebar-panel { width: 100% !important; padding: 24px 20px !important; overflow-y: visible !important; }
+      .ideas-box { min-height: 120px !important; flex: none !important; }
+      .main-panel { padding: 24px 20px !important; overflow-y: visible !important; }
+      
+      .header-bar { flex-direction: column !important; align-items: stretch !important; gap: 16px !important; margin-bottom: 24px !important; }
+      .tabs-box { width: 100% !important; justify-content: center !important; }
+      .tabs-box button { flex: 1 !important; }
+      
+      .days-row { width: 100% !important; overflow-x: auto !important; padding-bottom: 12px !important; margin-bottom: 24px !important; }
+      .days-row button { flex-shrink: 0 !important; }
+      
+      .block-inner { flex-direction: column !important; gap: 12px !important; }
+      .block-controls { width: 100% !important; justify-content: flex-end !important; margin-top: 12px !important; border-top: 1px solid #F1F5F9; padding-top: 12px; }
+      
+      .sync-box { width: 90vw !important; padding: 24px !important; }
+      .modal-box { width: 90vw !important; padding: 24px !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- ======================================================================
+       PEGA AQUÍ TU CONFIGURACIÓN DE FIREBASE
+       ====================================================================== -->
+  <script>
+    var firebaseConfig = {
+      apiKey: "AIzaSyBRJZdyVHUSNN7qDF08Zi8aFbqLbIWDFzA",
+      authDomain: "weekly-planner-8486a.firebaseapp.com",
+      projectId: "weekly-planner-8486a",
+      storageBucket: "weekly-planner-8486a.firebasestorage.app",
+      messagingSenderId: "712578012405",
+      appId: "1:712578012405:web:6d402fff597f289941e1bc"
+    };
+    firebase.initializeApp(firebaseConfig);
+    var db = firebase.firestore();
+    db.enablePersistence({ synchronizeTabs: true }).catch(function (err) {
+      console.warn("Cache offline no disponible en este navegador/pestaña:", err.code);
+    });
+  </script>
+
+  <script type="text/babel">
+    const { useState, useRef, useEffect, useCallback } = React;
+
+    const DAYS = ["LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB", "DOM"];
+    const FULL_DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+
+    const BLOCK_TYPES = {
+      estudio: { label: "Estudio", color: "#5B6EF1", bg: "#5B6EF115", icon: "📚" },
+      freelance: { label: "Edición Freelance", color: "#FF6B6B", bg: "#FF6B6B15", icon: "🎬" },
+      agencia: { label: "Edición Agencia", color: "#FF9F43", bg: "#FF9F4315", icon: "🎞️" },
+      ejercicio: { label: "Ejercicio", color: "#10AC84", bg: "#10AC8415", icon: "💪" },
+      admin: { label: "Admin / Correos", color: "#54A0FF", bg: "#54A0FF15", icon: "📋" },
+      blender: { label: "Blender / AE", color: "#00D2D3", bg: "#00D2D315", icon: "🎲" },
+    };
+
+    const createBlock = (id, type, label, anchor, duration) => ({
+      id, type, label, anchor, duration, done: false, subtasks: []
+    });
+
+    const DEFAULT_WEEK = {
+      LUN: [
+        createBlock("l1", "estudio", "Estudio técnico", "8:00 AM", 45),
+        createBlock("l2", "freelance", "Proyectos Freelance", "Bloque profundo", 180),
+        createBlock("l3", "agencia", "Video diario Agencia", "Post-almuerzo (2:00 PM)", 120),
+        createBlock("l4", "admin", "Organización y correos", "Final de jornada", 60),
+        createBlock("l5", "ejercicio", "Reto Salto de Cuerda", "Noche", 60),
+      ],
+      MAR: [
+        createBlock("m1", "estudio", "Estudio", "8:00 AM", 45),
+        createBlock("m2", "freelance", "Proyectos Freelance", "Bloque profundo", 180),
+        createBlock("m3", "blender", "Nodos y Modelado 3D", "Post-almuerzo (2:00 PM)", 120),
+        createBlock("m4", "agencia", "Video diario Agencia", "Tarde", 60),
+        createBlock("m5", "ejercicio", "Reto Salto de Cuerda", "Noche", 60),
+      ],
+      MIÉ: [
+        createBlock("x1", "freelance", "Proyectos Freelance", "Mañana completa", 180),
+        createBlock("x2", "agencia", "Video diario Agencia", "Post-almuerzo (2:00 PM)", 120),
+        createBlock("x3", "admin", "Revisión de avances", "Final de jornada", 60),
+        createBlock("x4", "ejercicio", "Reto Salto de Cuerda", "Noche", 60),
+      ],
+      JUE: [
+        createBlock("j1", "estudio", "Estudio técnico", "8:00 AM", 45),
+        createBlock("j2", "freelance", "Proyectos Freelance", "Bloque profundo", 180),
+        createBlock("j3", "blender", "Animación en AE / Blender", "Post-almuerzo (2:00 PM)", 120),
+        createBlock("j4", "agencia", "Video diario Agencia", "Tarde", 60),
+        createBlock("j5", "ejercicio", "Reto Salto de Cuerda", "Noche", 60),
+      ],
+      VIE: [
+        createBlock("v1", "freelance", "Cierre de proyectos", "Mañana completa", 180),
+        createBlock("v2", "agencia", "Video diario Agencia", "Post-almuerzo (2:00 PM)", 120),
+        createBlock("v3", "admin", "Facturación y cierre semanal", "Final de jornada", 60),
+        createBlock("v4", "ejercicio", "Reto Salto de Cuerda", "Noche", 60),
+      ],
+      SÁB: [
+        createBlock("s1", "ejercicio", "Vóley", "Mañana / Mediodía", 120),
+        createBlock("s2", "blender", "Diseño personal", "Tarde (Opcional)", 120),
+      ],
+      DOM: [
+        createBlock("d1", "admin", "Planificación de la semana", "Noche", 30),
+      ],
+    };
+
+    const DEFAULT_DATA = {
+      week: DEFAULT_WEEK,
+      backlog: [
+        { id: "b1", text: "Organizar referencias para animación 2D" },
+        { id: "b2", text: "Configurar materiales y nodos en Blender" },
+      ],
+      notes: "",
+      streak: { count: 0, lastCheck: null, goal: 60 },
+      lastReset: new Date().toISOString()
+    };
+
+    const SYNC_CODE_KEY = "planner-sync-code";
+
+    function getSyncCode() { try { return localStorage.getItem(SYNC_CODE_KEY); } catch { return null; } }
+    function setSyncCodeLocal(code) { try { localStorage.setItem(SYNC_CODE_KEY, code); } catch {} }
+    function clearSyncCodeLocal() { try { localStorage.removeItem(SYNC_CODE_KEY); } catch {} }
+
+    function docRef(syncCode) { return db.collection("planners").doc(syncCode); }
+
+    function subscribeToData(syncCode, onNext, onError) {
+      return docRef(syncCode).onSnapshot((snap) => {
+        if (snap.exists) {
+          onNext({ ...DEFAULT_DATA, ...snap.data() });
+        } else {
+          docRef(syncCode).set(DEFAULT_DATA).catch(onError);
+        }
+      }, onError);
+    }
+
+    function saveToCloud(syncCode, data) {
+      docRef(syncCode).set(data).catch((err) => console.error("Error guardando en la nube:", err));
+    }
+
+    function shouldReset(lastReset) {
+      if (!lastReset) return false;
+      const last = new Date(lastReset);
+      const nextSun = new Date(last);
+      const daysUntil = last.getDay() === 0 ? 7 : 7 - last.getDay();
+      nextSun.setDate(last.getDate() + daysUntil);
+      nextSun.setHours(0, 0, 0, 0);
+      return new Date() >= nextSun;
+    }
+
+    function emptyWeek() {
+      const out = {};
+      for (const d of DAYS) out[d] = [];
+      return out;
+    }
+
+    function fmtDur(mins) {
+      const h = Math.floor(mins / 60), m = mins % 60;
+      return h > 0 ? `${h}h${m > 0 ? ` ${m}m` : ""}` : `${m}m`;
+    }
+
+    function useDragSort(items, onChange) {
+      const dragIdx = useRef(null);
+      return {
+        onDragStart: (i) => { dragIdx.current = i; },
+        onDragEnter: (i) => {
+          if (i === dragIdx.current || dragIdx.current === null) return;
+          const next = [...items];
+          const [moved] = next.splice(dragIdx.current, 1);
+          next.splice(i, 0, moved);
+          dragIdx.current = i;
+          onChange(next);
+        },
+        onDragEnd: () => { dragIdx.current = null; },
+      };
+    }
+
+    // --- Componentes ---
+
+    function BlockCard({ block, index, onRemove, onToggle, drag, onAddSub, onToggleSub, onRemoveSub, onDragBlockStart, onDragBlockEnd }) {
+      const [expanded, setExpanded] = useState(false);
+      const bt = BLOCK_TYPES[block.type];
+      const subs = block.subtasks || [];
+      const doneSubs = subs.filter(s => s.done).length;
+
+      return (
+        <div
+          draggable
+          onDragStart={(e) => { 
+            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') { 
+              drag.onDragStart(index); 
+              onDragBlockStart(block.id);
+            } 
+          }}
+          onDragEnter={() => drag.onDragEnter(index)}
+          onDragEnd={() => { drag.onDragEnd(); onDragBlockEnd(); }}
+          onDragOver={e => e.preventDefault()}
+          style={{
+            background: block.done ? "#F8FAFC" : "#FFFFFF",
+            borderRadius: "20px", padding: "20px 24px", marginBottom: "16px",
+            boxShadow: block.done ? "none" : "0 8px 24px rgba(149, 157, 165, 0.08)",
+            border: block.done ? "1px solid #E2E8F0" : "1px solid transparent",
+            borderLeft: `4px solid ${block.done ? "#CBD5E1" : bt.color}`,
+            opacity: block.done ? 0.6 : 1,
+            transition: "all 0.2s ease",
+          }}
+        >
+          <div className="block-inner" style={{ display: "flex", alignItems: "flex-start", gap: "16px" }}>
+            <div style={{ color: "#CBD5E1", fontSize: "18px", marginTop: "4px", cursor: "grab" }}>⠿</div>
+            
+            <div style={{ flex: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+                <span style={{ fontSize: "14px" }}>{bt.icon}</span>
+                <span style={{ color: block.done ? "#94A3B8" : bt.color, fontSize: "11px", fontWeight: 700, letterSpacing: "0.5px", textTransform: "uppercase", background: block.done ? "#F1F5F9" : bt.bg, padding: "4px 8px", borderRadius: "8px" }}>
+                  {bt.label}
+                </span>
+                {subs.length > 0 && (
+                  <span style={{ fontSize: "11px", color: "#64748B", fontWeight: 600 }}>
+                    {doneSubs}/{subs.length} tareas
+                  </span>
+                )}
+              </div>
+              
+              <div style={{ color: block.done ? "#94A3B8" : "#1E293B", fontSize: "16px", fontWeight: 600, textDecoration: block.done ? "line-through" : "none", marginBottom: "4px" }}>
+                {block.label}
+              </div>
+              
+              <div style={{ color: "#64748B", fontSize: "13px", display: "flex", alignItems: "center", gap: "6px" }}>
+                <span>⚓ {block.anchor}</span>
+                <span style={{ color: "#CBD5E1" }}>•</span>
+                <span style={{ fontWeight: 500 }}>{fmtDur(block.duration)}</span>
+              </div>
+
+              <div 
+                onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
+                style={{ fontSize: "12px", color: "#64748B", cursor: "pointer", marginTop: "12px", fontWeight: 600, userSelect: "none", display: "inline-block" }}
+              >
+                {expanded ? "▲ Ocultar subtareas" : `▼ Ver subtareas`}
+              </div>
+
+              {expanded && (
+                <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px dashed #E2E8F0" }}>
+                  {subs.map(sub => (
+                    <div key={sub.id} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+                      <button onClick={() => onToggleSub(block.id, sub.id)} style={{
+                        width: "16px", height: "16px", borderRadius: "4px", border: `1px solid ${sub.done ? bt.color : "#CBD5E1"}`,
+                        background: sub.done ? bt.color : "transparent", color: "#FFF", fontSize: "10px", 
+                        display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0
+                      }}>
+                        {sub.done ? "✓" : ""}
+                      </button>
+                      <span style={{ flex: 1, fontSize: "13px", color: sub.done ? "#94A3B8" : "#334155", textDecoration: sub.done ? "line-through" : "none" }}>
+                        {sub.text}
+                      </span>
+                      <button onClick={() => onRemoveSub(block.id, sub.id)} style={{
+                        background: "none", border: "none", color: "#CBD5E1", cursor: "pointer", fontSize: "16px", padding: "0 4px"
+                      }}>×</button>
+                    </div>
+                  ))}
+                  
+                  <input 
+                    type="text" 
+                    placeholder="+ Nueva tarea (Presiona Enter)" 
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && e.target.value.trim()) {
+                        onAddSub(block.id, e.target.value.trim());
+                        e.target.value = '';
+                      }
+                    }}
+                    style={{ 
+                      width: "100%", padding: "8px 12px", border: "1px solid #E2E8F0", borderRadius: "8px", 
+                      fontSize: "13px", marginTop: "4px", outline: "none", background: "#F8FAFC"
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="block-controls" style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+              <button onClick={() => onRemove(block.id)} style={{
+                background: "#F1F5F9", border: "none", color: "#94A3B8", cursor: "pointer",
+                width: "32px", height: "32px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", transition: "all 0.15s",
+              }}
+                onMouseEnter={e => { e.currentTarget.style.color = "#FF6B6B"; e.currentTarget.style.background = "#FF6B6B15"; }}
+                onMouseLeave={e => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "#F1F5F9"; }}
+              >×</button>
+
+              <button onClick={() => onToggle(block.id)} style={{
+                width: "40px", height: "40px", borderRadius: "50%",
+                border: `2px solid ${block.done ? "#10AC84" : "#E2E8F0"}`,
+                background: block.done ? "#10AC84" : "transparent",
+                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                color: "#FFF", transition: "all 0.2s", fontSize: "18px"
+              }}>
+                {block.done ? "✓" : ""}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function AddBlockModal({ dayKey, onAdd, onClose, initialLabel = "" }) {
+      const [type, setType] = useState("freelance");
+      const [label, setLabel] = useState(initialLabel);
+      const [anchor, setAnchor] = useState("");
+      const [duration, setDuration] = useState(60);
+
+      return (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.4)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(8px)" }}>
+          <div className="modal-box" style={{ background: "#FFFFFF", borderRadius: "24px", padding: "32px", width: "400px", maxWidth: "90vw", boxShadow: "0 20px 40px rgba(0,0,0,0.1)" }}>
+            <h3 style={{ color: "#1E293B", margin: "0 0 24px", fontSize: "18px", fontWeight: 700 }}>
+              Nuevo Bloque — {FULL_DAYS[DAYS.indexOf(dayKey)]}
+            </h3>
+
+            <div style={{ color: "#64748B", fontSize: "11px", fontWeight: 700, letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "12px" }}>Categoría</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "24px" }}>
+              {Object.entries(BLOCK_TYPES).map(([k, v]) => (
+                <button key={k} onClick={() => setType(k)} style={{
+                  padding: "8px 14px", borderRadius: "12px", fontSize: "13px", fontWeight: 500, cursor: "pointer",
+                  border: `1px solid ${type === k ? v.color : "#E2E8F0"}`,
+                  background: type === k ? v.color : "transparent",
+                  color: type === k ? "#FFF" : "#64748B", transition: "all 0.15s",
+                }}>{v.icon} {v.label}</button>
+              ))}
+            </div>
+
+            {[["Título de la tarea", label, setLabel, "Ej. Edición documental"], ["Ancla temporal", anchor, setAnchor, "Ej. Después del almuerzo"]].map(([lbl, val, set, ph]) => (
+              <div key={lbl}>
+                <div style={{ color: "#64748B", fontSize: "11px", fontWeight: 700, letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "8px" }}>{lbl}</div>
+                <input value={val} onChange={e => set(e.target.value)} placeholder={ph}
+                  style={{ width: "100%", background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: "12px", padding: "14px 16px", color: "#1E293B", fontSize: "14px", marginBottom: "20px", outline: "none", boxSizing: "border-box", transition: "border 0.2s" }} 
+                  onFocus={e => e.target.style.borderColor = BLOCK_TYPES[type].color}
+                  onBlur={e => e.target.style.borderColor = "#E2E8F0"}
+                />
+              </div>
+            ))}
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+              <div style={{ color: "#64748B", fontSize: "11px", fontWeight: 700, letterSpacing: "0.5px", textTransform: "uppercase" }}>Duración</div>
+              <div style={{ color: BLOCK_TYPES[type].color, fontWeight: 700, fontSize: "15px" }}>{fmtDur(duration)}</div>
+            </div>
+            <input type="range" min={15} max={240} step={15} value={duration}
+              onChange={e => setDuration(Number(e.target.value))}
+              style={{ width: "100%", marginBottom: "32px", accentColor: BLOCK_TYPES[type].color }} />
+
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button onClick={onClose} style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "1px solid #E2E8F0", background: "#FFF", color: "#64748B", fontSize: "14px", fontWeight: 600, cursor: "pointer" }}>Cancelar</button>
+              <button onClick={() => { if (!label.trim()) return; onAdd(dayKey, { id: `c${Date.now()}`, type, label, anchor: anchor || "Sin ancla", duration, done: false, subtasks: [] }); onClose(); }}
+                style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "none", background: BLOCK_TYPES[type].color, color: "#FFF", fontWeight: 600, fontSize: "14px", cursor: "pointer", boxShadow: `0 4px 12px ${BLOCK_TYPES[type].color}40` }}>
+                Agregar Bloque
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function LoadingScreen({ error }) {
+      return (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "#F4F7F9", fontFamily: "'DM Sans', sans-serif", flexDirection: "column", gap: "12px" }}>
+          {error ? (
+            <>
+              <div style={{ fontSize: "15px", color: "#EF4444", fontWeight: 700 }}>No se pudo conectar con la nube</div>
+              <div style={{ fontSize: "13px", color: "#64748B", maxWidth: "340px", textAlign: "center" }}>{String((error && error.message) || error)}</div>
+              <div style={{ fontSize: "12px", color: "#94A3B8", maxWidth: "340px", textAlign: "center" }}>Revisa tu configuración de Firebase (firebaseConfig) y las reglas de seguridad de Firestore.</div>
+            </>
+          ) : (
+            <div style={{ fontSize: "14px", color: "#64748B" }}>Cargando…</div>
+          )}
+        </div>
+      );
+    }
+
+    function SyncSetup({ onConnect }) {
+      const [mode, setMode] = useState(null); 
+      const [inputCode, setInputCode] = useState("");
+
+      const cardStyle = { width: "440px", background: "#FFFFFF", borderRadius: "24px", padding: "36px", boxShadow: "0 20px 40px rgba(0,0,0,0.06)" };
+      const btnPrimary = { width: "100%", padding: "16px", borderRadius: "14px", border: "none", background: "#5B6EF1", color: "#FFF", fontSize: "15px", fontWeight: 700, cursor: "pointer", marginBottom: "12px" };
+      const btnSecondary = { width: "100%", padding: "16px", borderRadius: "14px", border: "1px solid #E2E8F0", background: "#FFF", color: "#1E293B", fontSize: "15px", fontWeight: 600, cursor: "pointer" };
+
+      return (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "#F4F7F9", fontFamily: "'DM Sans', sans-serif" }}>
+          <div className="sync-box" style={cardStyle}>
+            <div style={{ width: "48px", height: "48px", borderRadius: "16px", background: "#5B6EF1", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", fontWeight: 700, color: "#FFF", marginBottom: "20px" }}>C</div>
+            <h1 style={{ fontSize: "22px", color: "#1E293B", margin: "0 0 8px 0" }}>Sincronizar Planner</h1>
+
+            {mode !== "existing" ? (
+              <>
+                <p style={{ color: "#64748B", fontSize: "14px", lineHeight: 1.5, margin: "0 0 24px 0" }}>
+                  ¿Primera vez que abres el planner? Genera tu código y luego úsalo para conectar tus otros dispositivos.
+                </p>
+                <button style={btnPrimary} onClick={() => onConnect(crypto.randomUUID())}>Generar código nuevo</button>
+                <button style={btnSecondary} onClick={() => setMode("existing")}>Ya tengo un código de otro dispositivo</button>
+              </>
+            ) : (
+              <>
+                <p style={{ color: "#64748B", fontSize: "14px", lineHeight: 1.5, margin: "0 0 20px 0" }}>
+                  Pega el código que copiaste desde tu otro dispositivo (lo encuentras en el panel lateral, sección "Sincronización").
+                </p>
+                <input
+                  value={inputCode} onChange={e => setInputCode(e.target.value)} autoFocus
+                  placeholder="Pega tu código aquí"
+                  style={{ width: "100%", padding: "14px 16px", borderRadius: "12px", border: "1px solid #E2E8F0", fontSize: "14px", outline: "none", marginBottom: "16px", fontFamily: "'DM Mono', monospace" }}
+                />
+                <button style={{ ...btnPrimary, opacity: inputCode.trim() ? 1 : 0.5 }} disabled={!inputCode.trim()} onClick={() => onConnect(inputCode.trim())}>Conectar</button>
+                <button style={btnSecondary} onClick={() => setMode(null)}>Volver</button>
+              </>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function SyncBadge({ syncCode, onDisconnect }) {
+      const [open, setOpen] = useState(false);
+      const [copied, setCopied] = useState(false);
+
+      const copyCode = () => {
+        navigator.clipboard.writeText(syncCode).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        });
+      };
+
+      return (
+        <div style={{ background: "#2A2D35", borderRadius: "16px", padding: "14px 16px", marginBottom: "20px" }}>
+          <div onClick={() => setOpen(o => !o)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ fontSize: "14px" }}>🔄</span>
+              <span style={{ fontSize: "13px", fontWeight: 600, color: "#D1D5DB" }}>Sincronización</span>
+            </div>
+            <span style={{ color: "#8E94A3", fontSize: "12px" }}>{open ? "▲" : "▼"}</span>
+          </div>
+          {open && (
+            <div style={{ marginTop: "14px" }}>
+              <div style={{ color: "#8E94A3", fontSize: "11px", marginBottom: "8px" }}>Usa este código para conectar otro dispositivo:</div>
+              <div style={{ background: "#1E2128", borderRadius: "10px", padding: "10px 12px", fontFamily: "'DM Mono', monospace", fontSize: "11px", color: "#D1D5DB", wordBreak: "break-all", marginBottom: "10px" }}>
+                {syncCode}
+              </div>
+              <button onClick={copyCode} style={{ width: "100%", padding: "10px", borderRadius: "10px", border: "none", background: copied ? "#10AC84" : "#5B6EF1", color: "#FFF", fontSize: "12px", fontWeight: 600, cursor: "pointer", marginBottom: "8px" }}>
+                {copied ? "¡Copiado!" : "Copiar código"}
+              </button>
+              <button onClick={() => { if (confirm("¿Desconectar este dispositivo? Tus datos siguen a salvo en la nube, solo dejas de verlos aquí.")) onDisconnect(); }}
+                style={{ width: "100%", padding: "10px", borderRadius: "10px", border: "1px solid #3A3D45", background: "transparent", color: "#8E94A3", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>
+                Desconectar / usar otro código
+              </button>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function App() {
+      const [syncCode, setSyncCodeReact] = useState(() => getSyncCode());
+      const [data, setData] = useState(null);
+      const [connError, setConnError] = useState(null);
+      const [activeDay, setActiveDay] = useState("LUN");
+      const [activeTab, setActiveTab] = useState("planner");
+      const [showModal, setShowModal] = useState(false);
+      const [newBacklogTask, setNewBacklogTask] = useState("");
+      const [taskToSchedule, setTaskToSchedule] = useState("");
+      const [editingStreak, setEditingStreak] = useState(false);
+      const [draggedBlockId, setDraggedBlockId] = useState(null);
+      const [dragOverDay, setDragOverDay] = useState(null);
+      const saveRef = useRef(null);
+      const hasCheckedResetRef = useRef(false);
+
+      const connectSyncCode = (code) => { setSyncCodeLocal(code); setSyncCodeReact(code); };
+      const disconnectSync = () => { clearSyncCodeLocal(); setSyncCodeReact(null); setData(null); };
+
+      useEffect(() => {
+        if (!syncCode) return;
+        hasCheckedResetRef.current = false;
+        const unsubscribe = subscribeToData(syncCode, (loadedData) => {
+          if (!hasCheckedResetRef.current) {
+            hasCheckedResetRef.current = true;
+            if (shouldReset(loadedData.lastReset)) {
+              const freshData = { ...loadedData, week: emptyWeek(), lastReset: new Date().toISOString() };
+              setData(freshData);
+              saveToCloud(syncCode, freshData);
+              setConnError(null);
+              return;
+            }
+          }
+          setData(loadedData);
+          setConnError(null);
+        }, (err) => setConnError(err));
+        return () => unsubscribe();
+      }, [syncCode]);
+
+      const persist = useCallback((newData) => {
+        if (!syncCode) return;
+        clearTimeout(saveRef.current);
+        saveRef.current = setTimeout(() => saveToCloud(syncCode, newData), 500);
+      }, [syncCode]);
+
+      const updateData = useCallback((updater) => {
+        setData(prev => {
+          const next = typeof updater === 'function' ? updater(prev) : updater;
+          persist(next);
+          return next;
+        });
+      }, [persist]);
+
+      const onAddSub = (blockId, text) => {
+        updateData(prev => ({
+          ...prev, week: { ...prev.week, [activeDay]: prev.week[activeDay].map(b => b.id === blockId ? { ...b, subtasks: [...(b.subtasks||[]), { id: `s${Date.now()}`, text, done: false }] } : b) }
+        }));
+      };
+      
+      const onToggleSub = (blockId, subId) => {
+        updateData(prev => ({
+          ...prev, week: { ...prev.week, [activeDay]: prev.week[activeDay].map(b => b.id === blockId ? { ...b, subtasks: b.subtasks.map(s => s.id === subId ? { ...s, done: !s.done } : s) } : b) }
+        }));
+      };
+      
+      const onRemoveSub = (blockId, subId) => {
+        updateData(prev => ({
+          ...prev, week: { ...prev.week, [activeDay]: prev.week[activeDay].map(b => b.id === blockId ? { ...b, subtasks: b.subtasks.filter(s => s.id !== subId) } : b) }
+        }));
+      };
+
+      const handleStreakCheck = () => {
+        const today = new Date().toDateString();
+        if (data.streak.lastCheck === today) return;
+        updateData(prev => ({ ...prev, streak: { ...prev.streak, count: prev.streak.count + 1, lastCheck: today } }));
+      };
+
+      const commitStreakEdit = (value) => {
+        const n = Math.max(0, Math.min(data.streak.goal, parseInt(value, 10) || 0));
+        updateData(prev => ({ ...prev, streak: { ...prev.streak, count: n } }));
+        setEditingStreak(false);
+      };
+
+      const moveBlockToDay = (blockId, targetDay) => {
+        updateData(prev => {
+          const sourceBlocks = prev.week[activeDay] || [];
+          const block = sourceBlocks.find(b => b.id === blockId);
+          if (!block) return prev;
+          const newSource = sourceBlocks.filter(b => b.id !== blockId);
+          const newTarget = [...(prev.week[targetDay] || []), block];
+          return { ...prev, week: { ...prev.week, [activeDay]: newSource, [targetDay]: newTarget } };
+        });
+        setDraggedBlockId(null);
+        setDragOverDay(null);
+      };
+
+      const dayBlocks = data ? (data.week[activeDay] || []) : [];
+      const drag = useDragSort(dayBlocks, (nextBlocks) => updateData(prev => ({ ...prev, week: { ...prev.week, [activeDay]: nextBlocks } })));
+
+      if (!syncCode) return <SyncSetup onConnect={connectSyncCode} />;
+      if (!data) return <LoadingScreen error={connError} />;
+
+      const totalMins = dayBlocks.reduce((a, b) => a + b.duration, 0);
+      const doneMins = dayBlocks.filter(b => b.done).reduce((a, b) => a + b.duration, 0);
+      
+      const todayDateStr = new Date().toDateString();
+      const isStreakChecked = data.streak.lastCheck === todayDateStr;
+
+      return (
+        <div className="app-wrapper" style={{ display: "flex", height: "100vh", background: "#F4F7F9", fontFamily: "'DM Sans', sans-serif" }}>
+          <style>{`
+            @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap');
+            * { box-sizing: border-box; }
+            ::-webkit-scrollbar { width: 6px; }
+            ::-webkit-scrollbar-track { background: transparent; }
+            ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+            input { font-family: inherit; }
+          `}</style>
+
+          {/* SIDEBAR OSCURA */}
+          <div className="sidebar-panel" style={{ width: "320px", background: "#1E2128", color: "#FFF", padding: "40px 24px", display: "flex", flexDirection: "column", flexShrink: 0, overflowY: "auto" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "40px" }}>
+              <div style={{ width: "48px", height: "48px", borderRadius: "16px", background: "#5B6EF1", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", fontWeight: 700 }}>C</div>
+              <div>
+                <div style={{ fontSize: "18px", fontWeight: 700, letterSpacing: "-0.5px" }}>Camilo</div>
+                <div style={{ color: "#8E94A3", fontSize: "12px" }}>Planner Semanal</div>
+              </div>
+            </div>
+
+            <SyncBadge syncCode={syncCode} onDisconnect={disconnectSync} />
+
+            {/* Widget: Tracker Físico */}
+            <div style={{ background: "#2A2D35", borderRadius: "20px", padding: "20px", marginBottom: "20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
+                <div>
+                  <div style={{ color: "#8E94A3", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "4px" }}>Reto Físico (60 Días)</div>
+                  <div style={{ color: "#D1D5DB", fontSize: "13px", fontWeight: 500 }}>Cuerda + Sombra</div>
+                </div>
+                <div style={{ fontSize: "24px" }}>🔥</div>
+              </div>
+              
+              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                {editingStreak ? (
+                  <input
+                    type="number" min={0} max={data.streak.goal} autoFocus
+                    defaultValue={data.streak.count}
+                    onBlur={(e) => commitStreakEdit(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') commitStreakEdit(e.target.value);
+                      if (e.key === 'Escape') setEditingStreak(false);
+                    }}
+                    style={{ width: "64px", fontSize: "28px", fontWeight: 700, background: "#1E2128", border: "1px solid #5B6EF1", borderRadius: "8px", color: "#FFF", outline: "none", padding: "0 4px", fontFamily: "inherit" }}
+                  />
+                ) : (
+                  <span 
+                    onClick={() => setEditingStreak(true)} 
+                    title="Clic para ajustar el número manualmente"
+                    style={{ color: "#FFF", fontSize: "28px", fontWeight: 700, lineHeight: 1, cursor: "pointer" }}
+                  >
+                    {data.streak.count}<span style={{fontSize: "14px", color:"#8E94A3"}}>/{data.streak.goal}</span>
+                  </span>
+                )}
+                <button 
+                  onClick={handleStreakCheck} 
+                  disabled={isStreakChecked}
+                  style={{ 
+                    background: isStreakChecked ? "#1E2128" : "#10AC84", color: isStreakChecked ? "#8E94A3" : "#FFF",
+                    border: "none", borderRadius: "10px", padding: "8px 16px", fontSize: "13px", fontWeight: 600, 
+                    cursor: isStreakChecked ? "default" : "pointer", transition: "all 0.2s" 
+                  }}
+                >
+                  {isStreakChecked ? "Completado hoy" : "Marcar hoy"}
+                </button>
+              </div>
+              <div style={{ width: "100%", height: "4px", background: "#1E2128", borderRadius: "2px", overflow: "hidden", marginTop: "16px" }}>
+                <div style={{ width: `${(data.streak.count / data.streak.goal) * 100}%`, height: "100%", background: "#10AC84", borderRadius: "2px", transition: "width 0.5s ease" }} />
+              </div>
+            </div>
+
+            {/* Widget: Capturador de Ideas */}
+            <div className="ideas-box" style={{ background: "#2A2D35", borderRadius: "20px", padding: "20px", marginBottom: "20px", display: "flex", flexDirection: "column", flex: 1, minHeight: "200px" }}>
+              <div style={{ color: "#8E94A3", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
+                <span>💡</span> Capturador de Ideas
+              </div>
+              <textarea 
+                value={data.notes}
+                onChange={e => updateData(prev => ({ ...prev, notes: e.target.value }))}
+                placeholder="Ej. Idea base cuadrada para keycap o setup de geometry nodes..."
+                style={{ 
+                  flex: 1, background: "transparent", border: "none", color: "#D1D5DB", outline: "none", 
+                  resize: "none", fontSize: "14px", fontFamily: "inherit", lineHeight: "1.5"
+                }}
+              />
+            </div>
+          </div>
+
+          {/* ÁREA PRINCIPAL */}
+          <div className="main-panel" style={{ flex: 1, padding: "40px 56px", overflowY: "auto", position: "relative" }}>
+            
+            {/* Cabecera / Switcher de Pestañas */}
+            <div className="header-bar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px" }}>
+              <div className="tabs-box" style={{ display: "flex", gap: "16px", background: "#FFFFFF", padding: "8px", borderRadius: "20px", boxShadow: "0 4px 20px rgba(0,0,0,0.02)" }}>
+                <button onClick={() => setActiveTab("planner")} style={{
+                  padding: "12px 24px", borderRadius: "14px", border: "none",
+                  background: activeTab === "planner" ? "#1E293B" : "transparent",
+                  color: activeTab === "planner" ? "#FFF" : "#64748B",
+                  fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s"
+                }}>📅 Semana</button>
+                <button onClick={() => setActiveTab("backlog")} style={{
+                  padding: "12px 24px", borderRadius: "14px", border: "none",
+                  background: activeTab === "backlog" ? "#1E293B" : "transparent",
+                  color: activeTab === "backlog" ? "#FFF" : "#64748B",
+                  fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", gap: "8px"
+                }}>
+                  Inbox <span style={{ background: activeTab === "backlog" ? "#FFF" : "#E2E8F0", color: activeTab === "backlog" ? "#1E293B" : "#64748B", padding: "2px 8px", borderRadius: "10px", fontSize: "11px" }}>{data.backlog.length}</span>
+                </button>
+              </div>
+
+              {activeTab === "planner" && (
+                <button onClick={() => { setTaskToSchedule(""); setShowModal(true); }} style={{
+                  background: "#1E293B", color: "#FFF", border: "none", borderRadius: "14px", padding: "14px 24px",
+                  fontSize: "14px", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px",
+                  boxShadow: "0 10px 20px rgba(30, 41, 59, 0.15)"
+                }}>
+                  <span style={{ fontSize: "18px" }}>+</span> Agregar Bloque
+                </button>
+              )}
+            </div>
+
+            {activeTab === "planner" ? (
+              <>
+                <div style={{ marginBottom: "32px" }}>
+                  <h1 style={{ color: "#1E293B", fontSize: "28px", margin: "0 0 8px 0", fontWeight: 700 }}>{FULL_DAYS[DAYS.indexOf(activeDay)]}</h1>
+                  <p style={{ color: "#64748B", margin: 0, fontSize: "15px" }}>
+                    {totalMins > 0 ? `Has completado ${fmtDur(doneMins)} de ${fmtDur(totalMins)} planificados hoy.` : "Día libre, no hay bloques planificados."}
+                  </p>
+                </div>
+
+                {/* Selector de Días */}
+                <div className="days-row" style={{ display: "flex", gap: "12px", marginBottom: "32px", width: "fit-content" }}>
+                  {DAYS.map((d, i) => {
+                    const isActive = d === activeDay;
+                    const blocks = data.week[d] || [];
+                    const allDone = blocks.length > 0 && blocks.every(b => b.done);
+                    const isValidDropTarget = draggedBlockId && d !== activeDay;
+                    const isDragOver = isValidDropTarget && dragOverDay === d;
+                    return (
+                      <button key={d} 
+                        onClick={() => setActiveDay(d)}
+                        onDragOver={(e) => { if (isValidDropTarget) e.preventDefault(); }}
+                        onDragEnter={() => { if (isValidDropTarget) setDragOverDay(d); }}
+                        onDragLeave={() => { if (dragOverDay === d) setDragOverDay(null); }}
+                        onDrop={(e) => { e.preventDefault(); if (isValidDropTarget) moveBlockToDay(draggedBlockId, d); }}
+                        style={{
+                        padding: "12px 20px", borderRadius: "14px",
+                        border: isDragOver ? "2px dashed #5B6EF1" : "2px solid transparent",
+                        background: isActive ? "#5B6EF1" : (isDragOver ? "#EEF0FF" : "#FFFFFF"),
+                        color: isActive ? "#FFF" : "#64748B",
+                        fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s",
+                        boxShadow: isActive ? "0 10px 20px rgba(91, 110, 241, 0.2)" : "0 4px 12px rgba(0,0,0,0.02)"
+                      }}>
+                        {d} {allDone && !isActive && <span style={{ color: "#10AC84", marginLeft: "4px" }}>•</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Lista de Bloques */}
+                <div style={{ maxWidth: "800px" }}>
+                  {dayBlocks.length === 0 ? (
+                    <div style={{ background: "#FFFFFF", borderRadius: "24px", padding: "60px 20px", textAlign: "center", border: "2px dashed #E2E8F0" }}>
+                      <div style={{ fontSize: "40px", marginBottom: "16px" }}>🌿</div>
+                      <div style={{ color: "#1E293B", fontSize: "18px", fontWeight: 700, marginBottom: "8px" }}>Día vacío</div>
+                      <div style={{ color: "#64748B", fontSize: "14px" }}>Disfruta de tu tiempo libre o agrega un bloque si es necesario.</div>
+                    </div>
+                  ) : (
+                    dayBlocks.map((block, i) => (
+                      <BlockCard key={block.id} block={block} index={i}
+                        onRemove={(id) => updateData(prev => ({ ...prev, week: { ...prev.week, [activeDay]: prev.week[activeDay].filter(b => b.id !== id) } }))}
+                        onToggle={(id) => updateData(prev => ({ ...prev, week: { ...prev.week, [activeDay]: prev.week[activeDay].map(b => b.id === id ? { ...b, done: !b.done } : b) } }))}
+                        drag={drag} onAddSub={onAddSub} onToggleSub={onToggleSub} onRemoveSub={onRemoveSub}
+                        onDragBlockStart={setDraggedBlockId} onDragBlockEnd={() => setDraggedBlockId(null)}
+                      />
+                    ))
+                  )}
+                </div>
+              </>
+            ) : (
+              /* VISTA BACKLOG */
+              <div style={{ maxWidth: "800px" }}>
+                <div style={{ marginBottom: "32px" }}>
+                  <h1 style={{ color: "#1E293B", fontSize: "28px", margin: "0 0 8px 0", fontWeight: 700 }}>Cajón de Tareas</h1>
+                  <p style={{ color: "#64748B", margin: 0, fontSize: "15px" }}>Escribe aquí tareas sueltas, ideas o proyectos. Luego agéndalas a tu semana.</p>
+                </div>
+                
+                <div style={{ display: "flex", gap: "12px", marginBottom: "32px" }}>
+                  <input 
+                    value={newBacklogTask} onChange={e => setNewBacklogTask(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && newBacklogTask.trim()) {
+                        updateData(prev => ({ ...prev, backlog: [{ id: `bk${Date.now()}`, text: newBacklogTask.trim() }, ...prev.backlog] }));
+                        setNewBacklogTask("");
+                      }
+                    }}
+                    placeholder="Escribe una tarea y presiona Enter..."
+                    style={{ flex: 1, padding: "16px 20px", borderRadius: "16px", border: "1px solid #E2E8F0", fontSize: "15px", outline: "none", background: "#FFFFFF" }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {data.backlog.length === 0 && (
+                    <div style={{ textAlign: "center", padding: "40px", color: "#94A3B8" }}>No hay tareas pendientes en el backlog.</div>
+                  )}
+                  {data.backlog.map(task => (
+                    <div key={task.id} style={{ background: "#FFFFFF", padding: "20px 24px", borderRadius: "16px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}>
+                      <span style={{ fontSize: "15px", color: "#1E293B", fontWeight: 500 }}>{task.text}</span>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button onClick={() => { setTaskToSchedule(task.text); setShowModal(true); updateData(prev => ({ ...prev, backlog: prev.backlog.filter(t => t.id !== task.id) })); }}
+                          style={{ background: "#F1F5F9", color: "#5B6EF1", border: "none", padding: "8px 16px", borderRadius: "10px", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
+                          Agendar a un bloque
+                        </button>
+                        <button onClick={() => updateData(prev => ({ ...prev, backlog: prev.backlog.filter(t => t.id !== task.id) }))}
+                          style={{ background: "#FFF", color: "#CBD5E1", border: "1px solid #E2E8F0", width: "36px", height: "36px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "16px" }}>
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {showModal && <AddBlockModal dayKey={activeDay} initialLabel={taskToSchedule}
+            onAdd={(dayKey, block) => updateData(prev => ({ ...prev, week: { ...prev.week, [dayKey]: [...prev.week[dayKey], block] } }))}
+            onClose={() => { setShowModal(false); setTaskToSchedule(""); }} />}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
