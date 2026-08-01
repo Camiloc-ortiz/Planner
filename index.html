@@ -13,30 +13,47 @@
   <style>
     body { margin: 0; padding: 0; background: #F4F7F9; overflow: hidden; }
     textarea::placeholder, input::placeholder { color: #94A3B8; }
+
+    /* --- CLASES RESPONSIVE AÑADIDAS --- */
+    @media (max-width: 768px) {
+      body { overflow: auto !important; }
+      .app-wrapper { flex-direction: column !important; height: auto !important; min-height: 100vh !important; overflow: visible !important; }
+      .sidebar-panel { width: 100% !important; padding: 24px 20px !important; overflow-y: visible !important; }
+      .ideas-box { min-height: 120px !important; flex: none !important; }
+      .main-panel { padding: 24px 20px !important; overflow-y: visible !important; }
+      
+      .header-bar { flex-direction: column !important; align-items: stretch !important; gap: 16px !important; margin-bottom: 24px !important; }
+      .tabs-box { width: 100% !important; justify-content: center !important; }
+      .tabs-box button { flex: 1 !important; }
+      
+      .days-row { width: 100% !important; overflow-x: auto !important; padding-bottom: 12px !important; margin-bottom: 24px !important; }
+      .days-row button { flex-shrink: 0 !important; }
+      
+      .block-inner { flex-direction: column !important; gap: 12px !important; }
+      .block-controls { width: 100% !important; justify-content: flex-end !important; margin-top: 12px !important; border-top: 1px solid #F1F5F9; padding-top: 12px; }
+      
+      .sync-box { width: 90vw !important; padding: 24px !important; }
+      .modal-box { width: 90vw !important; padding: 24px !important; }
+    }
   </style>
 </head>
 <body>
   <div id="root"></div>
 
   <!-- ======================================================================
-       PEGA AQUÍ TU CONFIGURACIÓN DE FIREBASE (Firebase Console > Configuración
-       del proyecto > tus apps > SDK setup and configuration > Config).
-       Es seguro que estos valores queden visibles en el HTML: la protección
-       real de tus datos la dan las Reglas de seguridad de Firestore, no el
-       secreto de esta configuración.
+       PEGA AQUÍ TU CONFIGURACIÓN DE FIREBASE
        ====================================================================== -->
   <script>
     var firebaseConfig = {
-  apiKey: "AIzaSyBRJZdyVHUSNN7qDF08Zi8aFbqLbIWDFzA",
-  authDomain: "weekly-planner-8486a.firebaseapp.com",
-  projectId: "weekly-planner-8486a",
-  storageBucket: "weekly-planner-8486a.firebasestorage.app",
-  messagingSenderId: "712578012405",
-  appId: "1:712578012405:web:6d402fff597f289941e1bc"
-};
+      apiKey: "AIzaSyBRJZdyVHUSNN7qDF08Zi8aFbqLbIWDFzA",
+      authDomain: "weekly-planner-8486a.firebaseapp.com",
+      projectId: "weekly-planner-8486a",
+      storageBucket: "weekly-planner-8486a.firebasestorage.app",
+      messagingSenderId: "712578012405",
+      appId: "1:712578012405:web:6d402fff597f289941e1bc"
+    };
     firebase.initializeApp(firebaseConfig);
     var db = firebase.firestore();
-    // Cache local para que la app siga funcionando offline y sincronice al reconectar.
     db.enablePersistence({ synchronizeTabs: true }).catch(function (err) {
       console.warn("Cache offline no disponible en este navegador/pestaña:", err.code);
     });
@@ -57,7 +74,6 @@
       blender: { label: "Blender / AE", color: "#00D2D3", bg: "#00D2D315", icon: "🎲" },
     };
 
-    // Helper para generar bloques con subtareas
     const createBlock = (id, type, label, anchor, duration) => ({
       id, type, label, anchor, duration, done: false, subtasks: []
     });
@@ -116,32 +132,19 @@
       lastReset: new Date().toISOString()
     };
 
-    // El "código de sincronización" es lo único que vive en este dispositivo (localStorage).
-    // Los datos reales del planner viven en Firestore, bajo /planners/{codigo}.
     const SYNC_CODE_KEY = "planner-sync-code";
 
-    function getSyncCode() {
-      try { return localStorage.getItem(SYNC_CODE_KEY); } catch { return null; }
-    }
-    function setSyncCodeLocal(code) {
-      try { localStorage.setItem(SYNC_CODE_KEY, code); } catch {}
-    }
-    function clearSyncCodeLocal() {
-      try { localStorage.removeItem(SYNC_CODE_KEY); } catch {}
-    }
+    function getSyncCode() { try { return localStorage.getItem(SYNC_CODE_KEY); } catch { return null; } }
+    function setSyncCodeLocal(code) { try { localStorage.setItem(SYNC_CODE_KEY, code); } catch {} }
+    function clearSyncCodeLocal() { try { localStorage.removeItem(SYNC_CODE_KEY); } catch {} }
 
-    function docRef(syncCode) {
-      return db.collection("planners").doc(syncCode);
-    }
+    function docRef(syncCode) { return db.collection("planners").doc(syncCode); }
 
-    // Escucha en tiempo real: onNext se llama con los datos actuales cada vez que
-    // cambian (en este dispositivo o en cualquier otro conectado al mismo código).
     function subscribeToData(syncCode, onNext, onError) {
       return docRef(syncCode).onSnapshot((snap) => {
         if (snap.exists) {
           onNext({ ...DEFAULT_DATA, ...snap.data() });
         } else {
-          // Primera vez que se usa este código: sembrar con los datos por defecto.
           docRef(syncCode).set(DEFAULT_DATA).catch(onError);
         }
       }, onError);
@@ -149,15 +152,6 @@
 
     function saveToCloud(syncCode, data) {
       docRef(syncCode).set(data).catch((err) => console.error("Error guardando en la nube:", err));
-    }
-
-    function getNextSundayMidnight() {
-      const now = new Date();
-      const daysUntil = now.getDay() === 0 ? 7 : 7 - now.getDay();
-      const next = new Date(now);
-      next.setDate(now.getDate() + daysUntil);
-      next.setHours(0, 0, 0, 0);
-      return next;
     }
 
     function shouldReset(lastReset) {
@@ -170,7 +164,6 @@
       return new Date() >= nextSun;
     }
 
-    // Al reiniciar la semana, los días quedan vacíos (sin bloques) para organizarlos desde 0.
     function emptyWeek() {
       const out = {};
       for (const d of DAYS) out[d] = [];
@@ -228,7 +221,7 @@
             transition: "all 0.2s ease",
           }}
         >
-          <div style={{ display: "flex", alignItems: "flex-start", gap: "16px" }}>
+          <div className="block-inner" style={{ display: "flex", alignItems: "flex-start", gap: "16px" }}>
             <div style={{ color: "#CBD5E1", fontSize: "18px", marginTop: "4px", cursor: "grab" }}>⠿</div>
             
             <div style={{ flex: 1 }}>
@@ -254,7 +247,6 @@
                 <span style={{ fontWeight: 500 }}>{fmtDur(block.duration)}</span>
               </div>
 
-              {/* Toggle Subtareas */}
               <div 
                 onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
                 style={{ fontSize: "12px", color: "#64748B", cursor: "pointer", marginTop: "12px", fontWeight: 600, userSelect: "none", display: "inline-block" }}
@@ -262,7 +254,6 @@
                 {expanded ? "▲ Ocultar subtareas" : `▼ Ver subtareas`}
               </div>
 
-              {/* Lista de Subtareas */}
               {expanded && (
                 <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px dashed #E2E8F0" }}>
                   {subs.map(sub => (
@@ -301,7 +292,7 @@
               )}
             </div>
 
-            <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+            <div className="block-controls" style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
               <button onClick={() => onRemove(block.id)} style={{
                 background: "#F1F5F9", border: "none", color: "#94A3B8", cursor: "pointer",
                 width: "32px", height: "32px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", transition: "all 0.15s",
@@ -333,7 +324,7 @@
 
       return (
         <div style={{ position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.4)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(8px)" }}>
-          <div style={{ background: "#FFFFFF", borderRadius: "24px", padding: "32px", width: "400px", maxWidth: "90vw", boxShadow: "0 20px 40px rgba(0,0,0,0.1)" }}>
+          <div className="modal-box" style={{ background: "#FFFFFF", borderRadius: "24px", padding: "32px", width: "400px", maxWidth: "90vw", boxShadow: "0 20px 40px rgba(0,0,0,0.1)" }}>
             <h3 style={{ color: "#1E293B", margin: "0 0 24px", fontSize: "18px", fontWeight: 700 }}>
               Nuevo Bloque — {FULL_DAYS[DAYS.indexOf(dayKey)]}
             </h3>
@@ -398,7 +389,7 @@
     }
 
     function SyncSetup({ onConnect }) {
-      const [mode, setMode] = useState(null); // null | 'existing'
+      const [mode, setMode] = useState(null); 
       const [inputCode, setInputCode] = useState("");
 
       const cardStyle = { width: "440px", background: "#FFFFFF", borderRadius: "24px", padding: "36px", boxShadow: "0 20px 40px rgba(0,0,0,0.06)" };
@@ -407,7 +398,7 @@
 
       return (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "#F4F7F9", fontFamily: "'DM Sans', sans-serif" }}>
-          <div style={cardStyle}>
+          <div className="sync-box" style={cardStyle}>
             <div style={{ width: "48px", height: "48px", borderRadius: "16px", background: "#5B6EF1", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", fontWeight: 700, color: "#FFF", marginBottom: "20px" }}>C</div>
             <h1 style={{ fontSize: "22px", color: "#1E293B", margin: "0 0 8px 0" }}>Sincronizar Planner</h1>
 
@@ -482,7 +473,7 @@
       const [data, setData] = useState(null);
       const [connError, setConnError] = useState(null);
       const [activeDay, setActiveDay] = useState("LUN");
-      const [activeTab, setActiveTab] = useState("planner"); // planner o backlog
+      const [activeTab, setActiveTab] = useState("planner");
       const [showModal, setShowModal] = useState(false);
       const [newBacklogTask, setNewBacklogTask] = useState("");
       const [taskToSchedule, setTaskToSchedule] = useState("");
@@ -529,7 +520,6 @@
         });
       }, [persist]);
 
-      // Métodos para Subtareas
       const onAddSub = (blockId, text) => {
         updateData(prev => ({
           ...prev, week: { ...prev.week, [activeDay]: prev.week[activeDay].map(b => b.id === blockId ? { ...b, subtasks: [...(b.subtasks||[]), { id: `s${Date.now()}`, text, done: false }] } : b) }
@@ -548,21 +538,18 @@
         }));
       };
 
-      // Tracker Físico
       const handleStreakCheck = () => {
         const today = new Date().toDateString();
         if (data.streak.lastCheck === today) return;
         updateData(prev => ({ ...prev, streak: { ...prev.streak, count: prev.streak.count + 1, lastCheck: today } }));
       };
 
-      // Permite corregir el contador a mano (ej. si te saltaste marcar algún día)
       const commitStreakEdit = (value) => {
         const n = Math.max(0, Math.min(data.streak.goal, parseInt(value, 10) || 0));
         updateData(prev => ({ ...prev, streak: { ...prev.streak, count: n } }));
         setEditingStreak(false);
       };
 
-      // Mueve un bloque del día activo a otro día (soltándolo sobre la pestaña del día destino)
       const moveBlockToDay = (blockId, targetDay) => {
         updateData(prev => {
           const sourceBlocks = prev.week[activeDay] || [];
@@ -576,9 +563,6 @@
         setDragOverDay(null);
       };
 
-      // dayBlocks y el hook useDragSort deben llamarse SIEMPRE, en el mismo orden,
-      // incluso en los renders donde "data" todavía es null (configurando sync o cargando).
-      // Por eso van antes de cualquier "return" condicional, con un valor de respaldo seguro.
       const dayBlocks = data ? (data.week[activeDay] || []) : [];
       const drag = useDragSort(dayBlocks, (nextBlocks) => updateData(prev => ({ ...prev, week: { ...prev.week, [activeDay]: nextBlocks } })));
 
@@ -592,7 +576,7 @@
       const isStreakChecked = data.streak.lastCheck === todayDateStr;
 
       return (
-        <div style={{ display: "flex", height: "100vh", background: "#F4F7F9", fontFamily: "'DM Sans', sans-serif" }}>
+        <div className="app-wrapper" style={{ display: "flex", height: "100vh", background: "#F4F7F9", fontFamily: "'DM Sans', sans-serif" }}>
           <style>{`
             @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap');
             * { box-sizing: border-box; }
@@ -603,7 +587,7 @@
           `}</style>
 
           {/* SIDEBAR OSCURA */}
-          <div style={{ width: "320px", background: "#1E2128", color: "#FFF", padding: "40px 24px", display: "flex", flexDirection: "column", flexShrink: 0, overflowY: "auto" }}>
+          <div className="sidebar-panel" style={{ width: "320px", background: "#1E2128", color: "#FFF", padding: "40px 24px", display: "flex", flexDirection: "column", flexShrink: 0, overflowY: "auto" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "40px" }}>
               <div style={{ width: "48px", height: "48px", borderRadius: "16px", background: "#5B6EF1", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", fontWeight: 700 }}>C</div>
               <div>
@@ -663,7 +647,7 @@
             </div>
 
             {/* Widget: Capturador de Ideas */}
-            <div style={{ background: "#2A2D35", borderRadius: "20px", padding: "20px", marginBottom: "20px", display: "flex", flexDirection: "column", flex: 1, minHeight: "200px" }}>
+            <div className="ideas-box" style={{ background: "#2A2D35", borderRadius: "20px", padding: "20px", marginBottom: "20px", display: "flex", flexDirection: "column", flex: 1, minHeight: "200px" }}>
               <div style={{ color: "#8E94A3", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
                 <span>💡</span> Capturador de Ideas
               </div>
@@ -680,11 +664,11 @@
           </div>
 
           {/* ÁREA PRINCIPAL */}
-          <div style={{ flex: 1, padding: "40px 56px", overflowY: "auto", position: "relative" }}>
+          <div className="main-panel" style={{ flex: 1, padding: "40px 56px", overflowY: "auto", position: "relative" }}>
             
             {/* Cabecera / Switcher de Pestañas */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px" }}>
-              <div style={{ display: "flex", gap: "16px", background: "#FFFFFF", padding: "8px", borderRadius: "20px", boxShadow: "0 4px 20px rgba(0,0,0,0.02)" }}>
+            <div className="header-bar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px" }}>
+              <div className="tabs-box" style={{ display: "flex", gap: "16px", background: "#FFFFFF", padding: "8px", borderRadius: "20px", boxShadow: "0 4px 20px rgba(0,0,0,0.02)" }}>
                 <button onClick={() => setActiveTab("planner")} style={{
                   padding: "12px 24px", borderRadius: "14px", border: "none",
                   background: activeTab === "planner" ? "#1E293B" : "transparent",
@@ -722,7 +706,7 @@
                 </div>
 
                 {/* Selector de Días */}
-                <div style={{ display: "flex", gap: "12px", marginBottom: "32px", width: "fit-content" }}>
+                <div className="days-row" style={{ display: "flex", gap: "12px", marginBottom: "32px", width: "fit-content" }}>
                   {DAYS.map((d, i) => {
                     const isActive = d === activeDay;
                     const blocks = data.week[d] || [];
@@ -755,7 +739,7 @@
                   {dayBlocks.length === 0 ? (
                     <div style={{ background: "#FFFFFF", borderRadius: "24px", padding: "60px 20px", textAlign: "center", border: "2px dashed #E2E8F0" }}>
                       <div style={{ fontSize: "40px", marginBottom: "16px" }}>🌿</div>
-                      <div style={{ color: "#1E293B", fontSize: "18px", fontWeight: 700, marginBottom: "8px" }}>Día de descanso</div>
+                      <div style={{ color: "#1E293B", fontSize: "18px", fontWeight: 700, marginBottom: "8px" }}>Día vacío</div>
                       <div style={{ color: "#64748B", fontSize: "14px" }}>Disfruta de tu tiempo libre o agrega un bloque si es necesario.</div>
                     </div>
                   ) : (
