@@ -9,7 +9,7 @@
   <!-- Tipografías -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
   
   <!-- React & Babel -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -51,13 +51,13 @@
       margin: 0; padding: 0; 
       background-color: var(--bg-main); 
       color: var(--text-main);
-      font-family: 'IBM Plex Mono', monospace;
+      font-family: 'Inter', sans-serif;
       overflow: hidden;
       transition: background-color 0.3s, color 0.3s;
     }
 
     h1, h2, h3, h4, .font-title {
-      font-family: 'Host Grotesk', sans-serif;
+      font-family: 'Space Grotesk', sans-serif;
     }
 
     ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -73,6 +73,7 @@
       padding: 4px 10px; border-radius: 20px;
       font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
       text-transform: uppercase;
+      font-family: 'Inter', sans-serif;
     }
     .glow-cyan { background: rgba(0, 210, 211, 0.15); color: #00d2d3; box-shadow: 0 0 12px rgba(0, 210, 211, 0.2); border: 1px solid rgba(0, 210, 211, 0.3); }
     .glow-purple { background: rgba(156, 136, 255, 0.15); color: #9c88ff; box-shadow: 0 0 12px rgba(156, 136, 255, 0.2); border: 1px solid rgba(156, 136, 255, 0.3); }
@@ -97,12 +98,12 @@
 
     /* Calendario Grilla */
     .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border-color); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; }
-    .cal-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: bold; color: var(--text-muted); padding: 12px 0; font-family: 'Host Grotesk'; font-size: 14px; }
+    .cal-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: bold; color: var(--text-muted); padding: 12px 0; font-family: 'Space Grotesk', sans-serif; font-size: 14px; }
     .cal-cell { background: var(--bg-main); min-height: 120px; padding: 8px; cursor: pointer; transition: background 0.2s; }
     .cal-cell:hover { background: var(--bg-hover); }
     .cal-cell.drag-over { background: var(--bg-card); border: 2px dashed var(--accent); }
     
-    .event-chip { font-size: 11px; padding: 4px 6px; border-radius: 4px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .event-chip { font-size: 11px; padding: 4px 6px; border-radius: 4px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Inter', sans-serif; }
     .event-gcal { background: rgba(0, 68, 255, 0.15); color: #82aaff; border-left: 3px solid var(--accent); }
     .event-local { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); }
   </style>
@@ -118,11 +119,11 @@
     // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyBRJZdyVHUSNN7qDF08Zi8aFbqLbIWDFzA",
-  authDomain: "weekly-planner-8486a.firebaseapp.com",
-  projectId: "weekly-planner-8486a",
-  storageBucket: "weekly-planner-8486a.firebasestorage.app",
-  messagingSenderId: "712578012405",
-  appId: "1:712578012405:web:6d402fff597f289941e1bc"
+      authDomain: "weekly-planner-8486a.firebaseapp.com",
+      projectId: "weekly-planner-8486a",
+      storageBucket: "weekly-planner-8486a.firebasestorage.app",
+      messagingSenderId: "712578012405",
+      appId: "1:712578012405:web:6d402fff597f289941e1bc"
     };
 
     if (!firebase.apps.length) {
