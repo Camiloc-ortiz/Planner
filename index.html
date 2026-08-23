@@ -53,8 +53,8 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
 
-    input, button { font-family: inherit; }
-    input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+    input, button, textarea, select { font-family: inherit; }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
 
     /* =========================================
        ESTILOS ESTRUCTURALES Y SIDEBAR COLAPSABLE
@@ -82,8 +82,8 @@
     .sidebar-nav { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; padding: 0 16px; }
     .sidebar-footer { border-top: 1px solid var(--border-color); padding: 20px 16px 0; display: flex; flex-direction: column; gap: 12px; }
     
-    .main-area { flex: 1; padding: 40px 60px; overflow-y: auto; position: relative; }
-    .client-card { background: var(--bg-card); border-radius: 20px; padding: 30px; margin-bottom: 32px; border: 1px solid var(--border-color); }
+    .main-area { flex: 1; padding: 40px 60px; overflow-y: auto; position: relative; scroll-behavior: smooth; }
+    .client-card { background: var(--bg-card); border-radius: 20px; padding: 30px; margin-bottom: 32px; border: 1px solid var(--border-color); transition: all 0.3s ease; }
     .clients-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
 
     /* Botones Menú */
@@ -103,6 +103,7 @@
     .glow-purple { background: rgba(156, 136, 255, 0.15); color: #9c88ff; box-shadow: 0 0 12px rgba(156, 136, 255, 0.2); border: 1px solid rgba(156, 136, 255, 0.3); }
     .glow-orange { background: rgba(255, 159, 67, 0.15); color: #ff9f43; box-shadow: 0 0 12px rgba(255, 159, 67, 0.2); border: 1px solid rgba(255, 159, 67, 0.3); }
     .glow-red { background: rgba(255, 71, 87, 0.15); color: #ff4757; box-shadow: 0 0 12px rgba(255, 71, 87, 0.2); border: 1px solid rgba(255, 71, 87, 0.3); }
+    .glow-green { background: rgba(46, 213, 115, 0.15); color: #2ed573; box-shadow: 0 0 12px rgba(46, 213, 115, 0.2); border: 1px solid rgba(46, 213, 115, 0.3); }
 
     .checkbox-custom { appearance: none; width: 20px; height: 20px; flex-shrink: 0; border: 2px solid var(--border-color); border-radius: 6px; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
     .checkbox-custom:checked { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
@@ -134,6 +135,28 @@
     .status-approved { background: rgba(156, 136, 255, 0.15); color: #9c88ff; border-color: rgba(156, 136, 255, 0.3); }
     .status-delivered { background: rgba(46, 213, 115, 0.15); color: #2ed573; border-color: rgba(46, 213, 115, 0.3); }
 
+    /* Modal & FAB UI */
+    .fab-btn { background: var(--accent); color: white; padding: 10px 20px; border-radius: 30px; font-weight: 600; cursor: pointer; border: none; box-shadow: 0 4px 15px var(--accent-glow); transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; font-size: 14px;}
+    .fab-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--accent-glow); }
+    
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-card { background: var(--bg-card); padding: 32px; border-radius: 24px; border: 1px solid var(--border-color); width: 100%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .modal-overlay.open .modal-card { transform: translateY(0); }
+    .modal-input { width: 100%; background: var(--bg-main); border: 1px solid var(--border-color); padding: 14px 16px; border-radius: 12px; color: var(--text-main); font-size: 14px; margin-bottom: 16px; }
+    
+    /* Toolbar & Accordion UI */
+    .accordion-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; padding-bottom: 16px; }
+    .chevron { transition: transform 0.3s ease; }
+    .chevron.open { transform: rotate(180deg); }
+    .toolbar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .toolbar-input { flex: 1; min-width: 200px; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 14px; border-radius: 10px; font-size: 13px; transition: border-color 0.2s; }
+    .toolbar-select { background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 14px; border-radius: 10px; font-size: 13px; cursor: pointer; transition: border-color 0.2s; }
+
+    /* Ideas Textarea */
+    .ideas-textarea { width: 100%; min-height: 140px; background: transparent; border: none; color: var(--text-main); font-family: inherit; font-size: 14px; line-height: 1.6; resize: vertical; outline: none; padding: 16px 0; border-top: 1px dashed var(--border-color); margin-top: 20px; }
+    .ideas-textarea::placeholder { color: var(--text-muted); font-style: italic; }
+
     /* =========================================
        MEDIA QUERIES - RESPONSIVE (MÓVIL)
        ========================================= */
@@ -153,8 +176,6 @@
       
       .main-area { padding: 20px 16px; overflow: visible; }
       .client-card { padding: 20px; margin-bottom: 24px; }
-      
-      .header-luis { flex-direction: column; align-items: flex-start !important; gap: 12px; }
       .page-header-flex { flex-direction: column; align-items: flex-start !important; gap: 16px; }
     }
   </style>
@@ -165,15 +186,29 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-    // Componente Input Editable
-    const EditableInput = ({ value, onSave, type = "text", placeholder = "", style = {} }) => {
+    // ==========================================
+    // COMPONENTES REUTILIZABLES
+    // ==========================================
+    const EditableInput = ({ value, onSave, type = "text", placeholder = "", style = {}, list = null }) => {
         const [localVal, setLocalVal] = useState(value || '');
         useEffect(() => { setLocalVal(value || '') }, [value]);
         return (
             <input 
                 type={type} value={localVal} onChange={e => setLocalVal(e.target.value)}
                 onBlur={() => { if(localVal !== value) onSave(localVal) }}
-                placeholder={placeholder} style={style}
+                placeholder={placeholder} style={style} list={list}
+            />
+        );
+    };
+
+    const EditableTextarea = ({ value, onSave, placeholder = "", className = "" }) => {
+        const [localVal, setLocalVal] = useState(value || '');
+        useEffect(() => { setLocalVal(value || '') }, [value]);
+        return (
+            <textarea 
+                value={localVal} onChange={e => setLocalVal(e.target.value)}
+                onBlur={() => { if(localVal !== value) onSave(localVal) }}
+                placeholder={placeholder} className={className}
             />
         );
     };
@@ -196,17 +231,21 @@
       const [user, setUser] = useState(null);
       const [activeTab, setActiveTab] = useState('clients');
       
-      const [sakeBrands, setSakeBrands] = useState(["Marca 1", "Marca 2"]);
+      const [clients, setClients] = useState([]);
       const [tasks, setTasks] = useState([]); 
       const [contentRecords, setContentRecords] = useState([]);
+      const [marcaPersonalIdeas, setMarcaPersonalIdeas] = useState("");
+      
       const [loading, setLoading] = useState(true);
 
       useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
           if (user) {
             setUser(user);
+            loadClients(user.uid);
             loadTasks(user.uid);
             loadContentRecords(user.uid);
+            loadSettings(user.uid);
           } else {
             setUser(null);
             setLoading(false);
@@ -217,69 +256,110 @@
 
       const loginWithGoogle = async () => {
         const provider = new firebase.auth.GoogleAuthProvider();
-        try {
-          await auth.signInWithPopup(provider);
-        } catch (error) {
-          console.error("Error al iniciar sesión:", error);
-          alert("Error de autenticación. Revisa la consola.");
-        }
+        try { await auth.signInWithPopup(provider); } 
+        catch (error) { console.error("Error al iniciar sesión:", error); alert("Error de autenticación. Revisa la consola."); }
       };
 
-      const logout = () => { auth.signOut(); setTasks([]); setContentRecords([]); };
+      const logout = () => { auth.signOut(); setTasks([]); setContentRecords([]); setClients([]); };
 
-      // Cargar tareas (Ordenadas en memoria)
+      // ==========================================
+      // FUNCIONES DE CARGA DE DATOS (READ)
+      // ==========================================
+      const loadClients = (uid) => {
+        db.collection('users').doc(uid).collection('clients').where('archived', '==', false).onSnapshot(snap => {
+            setClients(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        });
+      };
+
       const loadTasks = (uid) => {
         db.collection('users').doc(uid).collection('tasks').onSnapshot(snap => {
           let loadedTasks = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          
           loadedTasks.sort((a, b) => {
             const orderA = a.order !== undefined ? a.order : Number.MAX_SAFE_INTEGER;
             const orderB = b.order !== undefined ? b.order : Number.MAX_SAFE_INTEGER;
             if (orderA !== orderB) return orderA - orderB;
             return (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0);
           });
-          
           setTasks(loadedTasks);
-          
-          const sBrands = [...new Set(loadedTasks.filter(t => t.category === 'sake' && t.brand).map(t => t.brand))];
-          setSakeBrands(prev => {
-             const final = [...prev];
-             sBrands.forEach(b => { if(!final.includes(b)) final.push(b); });
-             return final;
-          });
-          
           setLoading(false);
         });
       };
 
-      // Cargar registros de contenido
       const loadContentRecords = (uid) => {
         db.collection('users').doc(uid).collection('content_records').orderBy('createdAt', 'asc').onSnapshot(snap => {
           setContentRecords(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         });
       };
 
-      // Funciones CRUD Tareas
-      const addTask = async (text, category, brand = null, date = null) => {
-        if (!text.trim() || !user) return;
-        
-        const list = tasks.filter(t => t.category === category && t.brand === brand);
-        const maxOrder = list.length > 0 ? Math.max(...list.map(t => t.order || 0)) : -1;
-
-        const newTask = { text, category, brand, done: false, date, order: maxOrder + 1, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
-        await db.collection('users').doc(user.uid).collection('tasks').add(newTask);
+      const loadSettings = (uid) => {
+        db.collection('users').doc(uid).collection('settings').doc('marcaPersonal').onSnapshot(doc => {
+            if(doc.exists) setMarcaPersonalIdeas(doc.data().ideas || "");
+        });
       };
 
+      // ==========================================
+      // FUNCIONES CRUD
+      // ==========================================
+      const addClient = async (name, url, type) => {
+        if (!user || !name) return;
+        await db.collection('users').doc(user.uid).collection('clients').add({
+          name, url, type, archived: false, brands: type === 'Agencia' ? [] : null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      };
+
+      const softDeleteClient = async (id) => {
+        if (!user || !window.confirm("¿Seguro que deseas ocultar este cliente? No se borrarán sus tareas ni registros.")) return;
+        await db.collection('users').doc(user.uid).collection('clients').doc(id).update({ archived: true });
+      };
+
+      const updateMarcaPersonalIdeas = async (val) => {
+        if (!user) return;
+        await db.collection('users').doc(user.uid).collection('settings').doc('marcaPersonal').set({ ideas: val }, { merge: true });
+      };
+
+      const addAgencyBrand = async (clientId, brandName) => {
+        if (!user || !brandName) return;
+        const clientRef = db.collection('users').doc(user.uid).collection('clients').doc(clientId);
+        await clientRef.update({ brands: firebase.firestore.FieldValue.arrayUnion(brandName) });
+      };
+
+      const deleteAgencyBrand = async (clientId, brandName) => {
+        if (!user || !window.confirm(`¿Seguro que deseas eliminar la marca "${brandName}" y TODAS sus tareas asociadas en Proyectos?`)) return;
+        
+        // 1. Eliminar marca del array
+        const clientRef = db.collection('users').doc(user.uid).collection('clients').doc(clientId);
+        await clientRef.update({ brands: firebase.firestore.FieldValue.arrayRemove(brandName) });
+        
+        // 2. Eliminar tareas de esa marca
+        try {
+            const snapshot = await db.collection('users').doc(user.uid).collection('tasks')
+              .where('category', '==', clientId).where('brand', '==', brandName).get();
+            const batch = db.batch();
+            snapshot.docs.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+        } catch(e) { console.error(e); }
+      };
+
+      // CRUD Tareas
+      const addTask = async (text, category, brand = null) => {
+        if (!text.trim() || !user) return;
+        const list = tasks.filter(t => t.category === category && t.brand === brand);
+        const maxOrder = list.length > 0 ? Math.max(...list.map(t => t.order || 0)) : -1;
+        const newTask = { text, category, brand, done: false, order: maxOrder + 1, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
+        await db.collection('users').doc(user.uid).collection('tasks').add(newTask);
+      };
+      
       const toggleTask = async (task) => {
         if (!user) return;
         await db.collection('users').doc(user.uid).collection('tasks').doc(task.id).update({ done: !task.done });
       };
-
+      
       const deleteTask = async (id) => {
         if (!user) return;
         await db.collection('users').doc(user.uid).collection('tasks').doc(id).delete();
       };
-
+      
       const updateTaskOrder = async (reorderedTasks) => {
         if (!user) return;
         const batch = db.batch();
@@ -287,30 +367,12 @@
           const ref = db.collection('users').doc(user.uid).collection('tasks').doc(task.id);
           batch.update(ref, { order: index });
         });
-        try {
-          await batch.commit();
-        } catch(e) { console.error("Error al reordenar", e); }
-      };
-
-      const deleteSakeBrand = async (brandName) => {
-        if (window.confirm(`¿Seguro que deseas eliminar la marca "${brandName}" y TODAS sus tareas asociadas?\n\n(Esto NO eliminará los videos del Registro de Contenido)`)) {
-          setSakeBrands(prev => prev.filter(b => b !== brandName));
-          if (!user) return;
-          try {
-            const snapshot = await db.collection('users').doc(user.uid).collection('tasks')
-              .where('category', '==', 'sake').where('brand', '==', brandName).get();
-            const batch = db.batch();
-            snapshot.docs.forEach(doc => batch.delete(doc.ref));
-            await batch.commit();
-          } catch (error) {
-            console.error("Error al eliminar la marca:", error);
-          }
-        }
+        try { await batch.commit(); } catch(e) { console.error("Error al reordenar", e); }
       };
 
       const clearAllTasks = async () => {
         if (!user) return;
-        if (window.confirm("¿Estás seguro de que deseas eliminar permanentemente TODAS las tareas listadas?")) {
+        if (window.confirm("¿Estás seguro de que deseas eliminar permanentemente TODAS las tareas listadas? (No afectará a las ideas de contenido ni al registro de videos)")) {
           try {
             const snapshot = await db.collection('users').doc(user.uid).collection('tasks').get();
             const batch = db.batch();
@@ -320,24 +382,23 @@
         }
       };
 
-      // Funciones CRUD Contenido
-      const addContent = async (projectKey) => {
+      // CRUD Contenido
+      const addContent = async (projectKey, isAgency) => {
         if (!user) return;
         await db.collection('users').doc(user.uid).collection('content_records').add({
-          project: projectKey, videoName: '', status: 'Sin empezar', notes: '', brand: '', dateReceived: '', dateDelivered: '',
+          project: projectKey, videoName: '', status: 'Sin empezar', notes: '', brand: isAgency ? '' : null, dateReceived: '', dateDelivered: '',
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
       };
-
       const updateContent = async (id, field, value) => {
         if (!user) return;
         await db.collection('users').doc(user.uid).collection('content_records').doc(id).update({ [field]: value });
       };
-
       const deleteContent = async (id) => {
         if (!user || !window.confirm("¿Deseas eliminar este registro de la tabla?")) return;
         await db.collection('users').doc(user.uid).collection('content_records').doc(id).delete();
       };
+
 
       if (loading) return <div style={{display:'flex', height:'100vh', alignItems:'center', justifyContent:'center'}}>Cargando Dashboard...</div>;
       
@@ -346,11 +407,7 @@
           <div style={{display:'flex', height:'100vh', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:'20px'}}>
             <h1 className="font-title" style={{fontSize:'32px', margin:0}}>Planner Pro</h1>
             <p style={{color:'var(--text-muted)'}}>Autenticación segura vinculada a tu cuenta.</p>
-            <button onClick={loginWithGoogle} style={{
-              background:'var(--accent)', color:'#FFF', border:'none', padding:'14px 24px', 
-              borderRadius:'12px', fontSize:'16px', fontWeight:'600', cursor:'pointer',
-              boxShadow:'0 10px 20px var(--accent-glow)'
-            }}>Ingresar con Google</button>
+            <button onClick={loginWithGoogle} style={{ background:'var(--accent)', color:'#FFF', border:'none', padding:'14px 24px', borderRadius:'12px', fontSize:'16px', fontWeight:'600', cursor:'pointer', boxShadow:'0 10px 20px var(--accent-glow)' }}>Ingresar con Google</button>
           </div>
         );
       }
@@ -362,7 +419,6 @@
           <div className="sidebar-wrapper">
             <div className="sidebar">
               <div className="sidebar-content">
-                
                 <div className="sidebar-header">
                   <img src={user.photoURL} alt="User" style={{ width: "40px", height: "40px", borderRadius: "12px", flexShrink: 0 }} />
                   <div className="user-details">
@@ -373,41 +429,22 @@
 
                 <div className="sidebar-nav">
                   <div className="menu-text" style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1px", paddingLeft: "16px", marginBottom: "4px" }}>Espacios</div>
-                  
                   <button className={`menu-btn ${activeTab === 'clients' ? 'active' : ''}`} onClick={() => setActiveTab('clients')}>
-                    <svg className="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="9 11 12 14 22 4"></polyline>
-                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                    </svg>
+                    <svg className="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
                     <span className="menu-text">Clientes & Proyectos</span>
                   </button>
-                  
                   <button className={`menu-btn ${activeTab === 'content' ? 'active' : ''}`} onClick={() => setActiveTab('content')}>
-                    <svg className="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
-                      <line x1="7" y1="2" x2="7" y2="22"></line>
-                      <line x1="17" y1="2" x2="17" y2="22"></line>
-                      <line x1="2" y1="12" x2="22" y2="12"></line>
-                      <line x1="2" y1="7" x2="7" y2="7"></line>
-                      <line x1="2" y1="17" x2="7" y2="17"></line>
-                      <line x1="17" y1="17" x2="22" y2="17"></line>
-                      <line x1="17" y1="7" x2="22" y2="7"></line>
-                    </svg>
+                    <svg className="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
                     <span className="menu-text">Registro de Contenido</span>
                   </button>
                 </div>
 
                 <div className="sidebar-footer">
                   <button onClick={logout} className="menu-btn" style={{ color: "#FF6B6B" }}>
-                    <svg className="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{stroke: "#FF6B6B", opacity: 1}}>
-                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                      <polyline points="16 17 21 12 16 7"></polyline>
-                      <line x1="21" y1="12" x2="9" y2="12"></line>
-                    </svg>
+                    <svg className="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{stroke: "#FF6B6B", opacity: 1}}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                     <span className="menu-text" style={{fontWeight: 600}}>Cerrar Sesión</span>
                   </button>
                 </div>
-
               </div>
             </div>
           </div>
@@ -415,10 +452,18 @@
           {/* ÁREA PRINCIPAL */}
           <div className="main-area">
             {activeTab === 'clients' && (
-              <ClientsView tasks={tasks} addTask={addTask} toggleTask={toggleTask} deleteTask={deleteTask} updateTaskOrder={updateTaskOrder} sakeBrands={sakeBrands} setSakeBrands={setSakeBrands} deleteSakeBrand={deleteSakeBrand} clearAllTasks={clearAllTasks} />
+              <ClientsView 
+                clients={clients} addClient={addClient} softDeleteClient={softDeleteClient} 
+                addAgencyBrand={addAgencyBrand} deleteAgencyBrand={deleteAgencyBrand}
+                tasks={tasks} addTask={addTask} toggleTask={toggleTask} deleteTask={deleteTask} updateTaskOrder={updateTaskOrder} clearAllTasks={clearAllTasks}
+                marcaPersonalIdeas={marcaPersonalIdeas} updateMarcaPersonalIdeas={updateMarcaPersonalIdeas}
+              />
             )}
             {activeTab === 'content' && (
-              <ContentView contentRecords={contentRecords} addContent={addContent} updateContent={updateContent} deleteContent={deleteContent} />
+              <ContentView 
+                clients={clients} softDeleteClient={softDeleteClient}
+                contentRecords={contentRecords} addContent={addContent} updateContent={updateContent} deleteContent={deleteContent} 
+              />
             )}
           </div>
         </div>
@@ -426,9 +471,10 @@
     }
 
     // ==========================================
-    // VISTA: REGISTRO DE CONTENIDO
+    // VISTA: REGISTRO DE CONTENIDO (TABLES & ACCORDION)
     // ==========================================
-    function ContentView({ contentRecords, addContent, updateContent, deleteContent }) {
+    function ContentView({ clients, softDeleteClient, contentRecords, addContent, updateContent, deleteContent }) {
+      
       const STATUS_OPTIONS = [
         { value: 'Sin empezar', class: 'status-todo' },
         { value: 'En progreso', class: 'status-progress' },
@@ -437,64 +483,102 @@
         { value: 'Entregado', class: 'status-delivered' }
       ];
 
-      const getStatusClass = (status) => {
-        const option = STATUS_OPTIONS.find(o => o.value === status);
-        return option ? option.class : 'status-todo';
-      };
+      const ClientTableAccordion = ({ title, projectId, isAgency, hideable }) => {
+        const [isExpanded, setIsExpanded] = useState(true);
+        const [search, setSearch] = useState('');
+        const [sort, setSort] = useState('none');
 
-      const renderTable = (projectTitle, projectKey, hasBrand, hasDates) => {
-        const records = contentRecords.filter(r => r.project === projectKey);
+        let records = contentRecords.filter(r => r.project === projectId);
         
+        // Extracción de marcas únicas para el datalist (Solo agencias)
+        const uniqueBrands = isAgency ? [...new Set(records.map(r => r.brand).filter(Boolean))] : [];
+        const datalistId = `brands-${projectId}`;
+
+        // Lógica de filtrado y ordenamiento
+        if (search) records = records.filter(r => (r.videoName || '').toLowerCase().includes(search.toLowerCase()));
+        if (sort === 'date') records.sort((a,b) => (a.dateReceived || '').localeCompare(b.dateReceived || ''));
+        if (sort === 'status') records.sort((a,b) => (a.status || '').localeCompare(b.status || ''));
+
         return (
           <div className="client-card">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "12px" }}>
-              <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>{projectTitle}</h2>
-              <button 
-                onClick={() => addContent(projectKey)} 
-                style={{ background: "var(--accent)", color: "#fff", border: "none", padding: "8px 16px", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer", boxShadow: "0 4px 12px var(--accent-glow)" }}
-              >
-                + Añadir Registro
-              </button>
-            </div>
             
-            <div className="table-responsive">
-              <table className="content-table">
-                <thead>
-                  <tr>
-                    <th>Nombre del video</th>
-                    {hasBrand && <th>Marca</th>}
-                    {hasDates && <th>Recepción</th>}
-                    {hasDates && <th>Entrega</th>}
-                    <th>Estado</th>
-                    <th>Notas</th>
-                    <th style={{textAlign: "center"}}>Acción</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {records.length === 0 && (
+            {/* Cabecera / Acordeón */}
+            <div className="accordion-header" onClick={() => setIsExpanded(!isExpanded)} style={{ marginBottom: isExpanded ? "16px" : "0", paddingBottom: isExpanded ? "16px" : "0", borderBottom: isExpanded ? "1px dashed var(--border-color)" : "none" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <span className={`glow-tag ${isAgency ? 'glow-orange' : (projectId==='personal' ? 'glow-purple' : 'glow-cyan')}`}>
+                  {projectId === 'personal' ? 'Fijo' : (isAgency ? 'Agencia' : 'Estándar')}
+                </span>
+                <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>{title}</h2>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                {hideable && <button onClick={(e) => { e.stopPropagation(); softDeleteClient(projectId); }} style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "16px" }} title="Ocultar Cliente">×</button>}
+                <svg className={`chevron ${isExpanded ? 'open' : ''}`} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+            </div>
+
+            {/* Contenido Colapsable */}
+            <div style={{ display: isExpanded ? 'block' : 'none' }}>
+              
+              {/* Toolbar Notion-Style */}
+              <div className="toolbar">
+                <input type="text" placeholder="Buscar video..." value={search} onChange={e => setSearch(e.target.value)} className="toolbar-input" />
+                <select value={sort} onChange={e => setSort(e.target.value)} className="toolbar-select">
+                  <option value="none">Ordenar por...</option>
+                  <option value="date">Fecha de Recepción</option>
+                  <option value="status">Estado</option>
+                </select>
+                <button onClick={() => addContent(projectId, isAgency)} style={{ background: "var(--accent)", color: "#fff", border: "none", padding: "8px 16px", borderRadius: "10px", fontSize: "13px", fontWeight: "600", cursor: "pointer", marginLeft: "auto" }}>
+                  + Añadir
+                </button>
+              </div>
+
+              {/* Datalist dinámico para marcas */}
+              {isAgency && (
+                <datalist id={datalistId}>
+                  {uniqueBrands.map(b => <option key={b} value={b} />)}
+                </datalist>
+              )}
+              
+              {/* Tabla */}
+              <div className="table-responsive">
+                <table className="content-table">
+                  <thead>
                     <tr>
-                      <td colSpan={hasBrand && hasDates ? 7 : (hasDates ? 6 : 4)} style={{ textAlign: "center", color: "var(--text-muted)", fontStyle: "italic", padding: "24px" }}>
-                        Sin registros. Haz clic en "Añadir Registro" para comenzar.
-                      </td>
+                      <th>Nombre del video</th>
+                      {isAgency && <th>Marca</th>}
+                      <th>Recepción</th>
+                      <th>Entrega</th>
+                      <th>Estado</th>
+                      <th>Notas</th>
+                      <th style={{textAlign: "center"}}>Acción</th>
                     </tr>
-                  )}
-                  {records.map(record => (
-                    <tr key={record.id}>
-                      <td><EditableInput value={record.videoName} onSave={(val) => updateContent(record.id, 'videoName', val)} placeholder="Título del video..." /></td>
-                      {hasBrand && <td><EditableInput value={record.brand} onSave={(val) => updateContent(record.id, 'brand', val)} placeholder="Marca..." /></td>}
-                      {hasDates && <td><input type="date" value={record.dateReceived || ''} onChange={(e) => updateContent(record.id, 'dateReceived', e.target.value)} /></td>}
-                      {hasDates && <td><input type="date" value={record.dateDelivered || ''} onChange={(e) => updateContent(record.id, 'dateDelivered', e.target.value)} /></td>}
-                      <td>
-                        <select value={record.status} onChange={(e) => updateContent(record.id, 'status', e.target.value)} className={getStatusClass(record.status)}>
-                          {STATUS_OPTIONS.map(opt => <option key={opt.value} value={opt.value} style={{background: 'var(--bg-card)', color: 'var(--text-main)'}}>{opt.value}</option>)}
-                        </select>
-                      </td>
-                      <td><EditableInput value={record.notes} onSave={(val) => updateContent(record.id, 'notes', val)} placeholder="Anotaciones..." /></td>
-                      <td style={{ textAlign: "center" }}><button onClick={() => deleteContent(record.id)} style={{ background: "transparent", border: "none", color: "#ff4757", cursor: "pointer", fontSize: "20px" }} title="Eliminar">×</button></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {records.length === 0 && (
+                      <tr>
+                        <td colSpan={isAgency ? 7 : 6} style={{ textAlign: "center", color: "var(--text-muted)", fontStyle: "italic", padding: "24px" }}>
+                          Sin registros para mostrar.
+                        </td>
+                      </tr>
+                    )}
+                    {records.map(record => (
+                      <tr key={record.id}>
+                        <td><EditableInput value={record.videoName} onSave={(val) => updateContent(record.id, 'videoName', val)} placeholder="Título del video..." /></td>
+                        {isAgency && <td><EditableInput value={record.brand} onSave={(val) => updateContent(record.id, 'brand', val)} placeholder="Seleccionar marca..." list={datalistId} /></td>}
+                        <td><input type="date" value={record.dateReceived || ''} onChange={(e) => updateContent(record.id, 'dateReceived', e.target.value)} /></td>
+                        <td><input type="date" value={record.dateDelivered || ''} onChange={(e) => updateContent(record.id, 'dateDelivered', e.target.value)} /></td>
+                        <td>
+                          <select value={record.status} onChange={(e) => updateContent(record.id, 'status', e.target.value)} className={STATUS_OPTIONS.find(o => o.value === record.status)?.class || 'status-todo'}>
+                            {STATUS_OPTIONS.map(opt => <option key={opt.value} value={opt.value} style={{background: 'var(--bg-card)', color: 'var(--text-main)'}}>{opt.value}</option>)}
+                          </select>
+                        </td>
+                        <td><EditableInput value={record.notes} onSave={(val) => updateContent(record.id, 'notes', val)} placeholder="Anotaciones..." /></td>
+                        <td style={{ textAlign: "center" }}><button onClick={() => deleteContent(record.id)} style={{ background: "transparent", border: "none", color: "#ff4757", cursor: "pointer", fontSize: "20px" }} title="Eliminar">×</button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         );
@@ -503,18 +587,35 @@
       return (
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
           <h1 className="font-title" style={{ fontSize: "32px", margin: "0 0 32px 0" }}>Registro de Contenido</h1>
-          {renderTable("Luis Posada", "luis", false, true)}
-          {renderTable("Sake Agency", "sake", true, true)}
-          {renderTable("Marca Personal", "personal", false, false)}
+          
+          {/* Clientes Dinámicos */}
+          {clients.map(client => (
+            <ClientTableAccordion key={client.id} title={client.name} projectId={client.id} isAgency={client.type === 'Agencia'} hideable={true} />
+          ))}
+
+          {/* Módulo Fijo */}
+          <ClientTableAccordion title="Marca Personal" projectId="personal" isAgency={false} hideable={false} />
         </div>
       );
     }
 
     // ==========================================
-    // VISTA CLIENTES & PROYECTOS (DRAG & DROP)
+    // VISTA CLIENTES & PROYECTOS (DRAG & DROP + DINAMISMO)
     // ==========================================
-    function ClientsView({ tasks, addTask, toggleTask, deleteTask, updateTaskOrder, sakeBrands, setSakeBrands, deleteSakeBrand, clearAllTasks }) {
+    function ClientsView({ clients, addClient, softDeleteClient, addAgencyBrand, deleteAgencyBrand, tasks, addTask, toggleTask, deleteTask, updateTaskOrder, clearAllTasks, marcaPersonalIdeas, updateMarcaPersonalIdeas }) {
       
+      const [isModalOpen, setIsModalOpen] = useState(false);
+      const [newClientName, setNewClientName] = useState("");
+      const [newClientUrl, setNewClientUrl] = useState("");
+      const [newClientType, setNewClientType] = useState("Estándar");
+
+      const handleAddClient = () => {
+        if(newClientName.trim()){
+          addClient(newClientName, newClientUrl, newClientType);
+          setNewClientName(""); setNewClientUrl(""); setIsModalOpen(false);
+        }
+      };
+
       const TaskInput = ({ onAdd, placeholder }) => {
         const [val, setVal] = useState("");
         return (
@@ -527,37 +628,22 @@
         );
       };
 
-      // Componente Lista con Drag and Drop Nativo
+      // Drag & Drop List
       const TaskList = ({ list }) => {
         const [draggedId, setDraggedId] = useState(null);
         const [dragOverId, setDragOverId] = useState(null);
 
-        const handleDragStart = (e, id) => {
-          setDraggedId(id);
-          e.dataTransfer.effectAllowed = "move";
-          e.dataTransfer.setData("text/plain", id);
-        };
-
-        const handleDragOver = (e, id) => {
-          e.preventDefault();
-          setDragOverId(id);
-        };
-
+        const handleDragStart = (e, id) => { setDraggedId(id); e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", id); };
+        const handleDragOver = (e, id) => { e.preventDefault(); setDragOverId(id); };
         const handleDrop = (e, targetId) => {
-          e.preventDefault();
-          setDragOverId(null);
-          
+          e.preventDefault(); setDragOverId(null);
           if (!draggedId || draggedId === targetId) return;
-
           const newList = [...list];
           const sourceIndex = newList.findIndex(t => t.id === draggedId);
           const targetIndex = newList.findIndex(t => t.id === targetId);
-          
           if (sourceIndex < 0 || targetIndex < 0) return;
-
           const [movedItem] = newList.splice(sourceIndex, 1);
           newList.splice(targetIndex, 0, movedItem);
-
           newList.forEach((task, idx) => { task.order = idx; });
           updateTaskOrder(newList);
           setDraggedId(null);
@@ -568,17 +654,9 @@
             {list.length === 0 && <div style={{ color: "var(--text-muted)", fontSize: "13px", fontStyle: "italic" }}>No hay pendientes.</div>}
             {list.map(t => (
               <div 
-                key={t.id} 
-                draggable
-                onDragStart={(e) => handleDragStart(e, t.id)}
-                onDragOver={(e) => handleDragOver(e, t.id)}
-                onDrop={(e) => handleDrop(e, t.id)}
+                key={t.id} draggable onDragStart={(e) => handleDragStart(e, t.id)} onDragOver={(e) => handleDragOver(e, t.id)} onDrop={(e) => handleDrop(e, t.id)}
                 className={`task-item ${t.done ? 'done' : ''} ${dragOverId === t.id ? 'drag-over' : ''}`} 
-                style={{ 
-                  display: "flex", alignItems: "flex-start", gap: "12px", 
-                  background: "var(--bg-main)", padding: "12px 16px", borderRadius: "10px", 
-                  border: "1px solid var(--border-color)", opacity: draggedId === t.id ? 0.4 : 1
-                }}
+                style={{ display: "flex", alignItems: "flex-start", gap: "12px", background: "var(--bg-main)", padding: "12px 16px", borderRadius: "10px", border: "1px solid var(--border-color)", opacity: draggedId === t.id ? 0.4 : 1 }}
               >
                 <input type="checkbox" className="checkbox-custom" checked={t.done} onChange={() => toggleTask(t)} style={{marginTop: "2px"}} />
                 <span style={{ flex: 1, fontSize: "14px", color: t.done ? "var(--text-muted)" : "var(--text-main)", lineHeight: "1.4" }}>{t.text}</span>
@@ -590,82 +668,106 @@
       };
 
       return (
-        <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "1000px", margin: "0 auto", paddingBottom: "60px" }}>
           
           <div className="page-header-flex" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
             <h1 className="font-title" style={{ fontSize: "32px", margin: 0 }}>Clientes & Proyectos</h1>
-            <button 
-              onClick={clearAllTasks}
-              style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(255, 71, 87, 0.1)", color: "#ff4757", border: "1px solid rgba(255, 71, 87, 0.3)", padding: "8px 16px", borderRadius: "10px", fontSize: "13px", fontWeight: "600", cursor: "pointer", transition: "all 0.2s" }}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width: "16px", height: "16px"}}>
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              </svg>
-              Limpiar todo
-            </button>
+            <div style={{display: "flex", gap: "12px"}}>
+                <button onClick={() => setIsModalOpen(true)} className="fab-btn">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  Nuevo Cliente
+                </button>
+                <button 
+                onClick={clearAllTasks}
+                style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(255, 71, 87, 0.1)", color: "#ff4757", border: "1px solid rgba(255, 71, 87, 0.3)", padding: "8px 16px", borderRadius: "30px", fontSize: "13px", fontWeight: "600", cursor: "pointer", transition: "all 0.2s" }}
+                >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width: "16px", height: "16px"}}><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                Limpiar todo
+                </button>
+            </div>
           </div>
 
-          {/* LUIS POSADA */}
-          <div className="client-card">
-            <div className="header-luis" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <span className="glow-tag glow-cyan">Cliente</span>
-                <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>Luis Posada</h2>
-              </div>
-              <a href="https://www.instagram.com/luisposada.ai/" target="_blank" style={{ color: "var(--accent)", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>@luisposada.ai ↗</a>
-            </div>
-            <TaskList list={tasks.filter(t => t.category === 'luis')} />
-            <TaskInput onAdd={(text) => addTask(text, 'luis')} placeholder="+ Nuevo pendiente para Luis..." />
-          </div>
-
-          {/* SAKE AGENCY */}
-          <div className="client-card">
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
-              <span className="glow-tag glow-orange">Agencia</span>
-              <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>Sake Agency</h2>
-            </div>
-            
-            <div className="clients-grid">
-              {sakeBrands.map(brand => (
-                <div key={brand} style={{ background: "var(--bg-main)", padding: "20px", borderRadius: "16px", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", position: "relative" }}>
-                  <button 
-                    onClick={() => deleteSakeBrand(brand)} 
-                    style={{ position: "absolute", top: "16px", right: "16px", background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "16px", padding: "4px" }}
-                    title={`Eliminar ${brand}`}
-                  >×</button>
-                  <h3 className="font-title" style={{ margin: "0 0 16px 0", fontSize: "16px", color: "var(--text-muted)", paddingRight: "20px" }}>{brand}</h3>
-                  <div style={{ flex: 1 }}>
-                    <TaskList list={tasks.filter(t => t.category === 'sake' && t.brand === brand)} />
+          {/* RENDERIZADO DINÁMICO DE CLIENTES */}
+          {clients.map(client => {
+            if (client.type === 'Estándar') {
+              return (
+                <div key={client.id} className="client-card" style={{ position: "relative" }}>
+                  <button onClick={() => softDeleteClient(client.id)} style={{ position: "absolute", top: "20px", right: "20px", background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "18px" }}>×</button>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingRight: "30px", flexWrap: "wrap", gap: "10px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <span className="glow-tag glow-cyan">Cliente</span>
+                      <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>{client.name}</h2>
+                    </div>
+                    {client.url && <a href={client.url} target="_blank" style={{ color: "var(--accent)", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>Enlace ↗</a>}
                   </div>
-                  <TaskInput onAdd={(text) => addTask(text, 'sake', brand)} placeholder={`+ Tarea para ${brand}`} />
+                  <TaskList list={tasks.filter(t => t.category === client.id)} />
+                  <TaskInput onAdd={(text) => addTask(text, client.id)} placeholder={`+ Nuevo pendiente para ${client.name}...`} />
                 </div>
-              ))}
-              
-              <div style={{ border: "2px dashed var(--border-color)", borderRadius: "16px", padding: "20px", display: "flex", alignItems: "center", justifyContent: "center", minHeight: "150px" }}>
-                <input 
-                  type="text" placeholder="+ Agregar Marca" 
-                  onKeyDown={e => { if (e.key === 'Enter' && e.target.value) { setSakeBrands([...sakeBrands, e.target.value]); e.target.value=''; } }}
-                  style={{ background: "transparent", border: "none", textAlign: "center", color: "var(--text-main)", fontSize: "14px", width: "100%", outline: "none" }}
-                />
-              </div>
-            </div>
-          </div>
+              );
+            } 
+            else if (client.type === 'Agencia') {
+              const agencyBrands = client.brands || [];
+              return (
+                <div key={client.id} className="client-card" style={{ position: "relative" }}>
+                  <button onClick={() => softDeleteClient(client.id)} style={{ position: "absolute", top: "20px", right: "20px", background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "18px" }}>×</button>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingRight: "30px", marginBottom: "24px", flexWrap: "wrap", gap: "10px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <span className="glow-tag glow-orange">Agencia</span>
+                        <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>{client.name}</h2>
+                      </div>
+                      {client.url && <a href={client.url} target="_blank" style={{ color: "var(--accent)", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>Enlace ↗</a>}
+                  </div>
+                  
+                  <div className="clients-grid">
+                    {agencyBrands.map(brand => (
+                      <div key={brand} style={{ background: "var(--bg-main)", padding: "20px", borderRadius: "16px", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", position: "relative" }}>
+                        <button onClick={() => deleteAgencyBrand(client.id, brand)} style={{ position: "absolute", top: "16px", right: "16px", background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "16px", padding: "4px" }}>×</button>
+                        <h3 className="font-title" style={{ margin: "0 0 16px 0", fontSize: "16px", color: "var(--text-muted)", paddingRight: "20px" }}>{brand}</h3>
+                        <div style={{ flex: 1 }}>
+                          <TaskList list={tasks.filter(t => t.category === client.id && t.brand === brand)} />
+                        </div>
+                        <TaskInput onAdd={(text) => addTask(text, client.id, brand)} placeholder={`+ Tarea para ${brand}`} />
+                      </div>
+                    ))}
+                    
+                    <div style={{ border: "2px dashed var(--border-color)", borderRadius: "16px", padding: "20px", display: "flex", alignItems: "center", justifyContent: "center", minHeight: "150px" }}>
+                      <input 
+                        type="text" placeholder="+ Agregar Marca" 
+                        onKeyDown={e => { if (e.key === 'Enter' && e.target.value) { addAgencyBrand(client.id, e.target.value); e.target.value=''; } }}
+                        style={{ background: "transparent", border: "none", textAlign: "center", color: "var(--text-main)", fontSize: "14px", width: "100%", outline: "none" }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+          })}
 
-          {/* MARCA PERSONAL */}
+          <hr style={{border: "none", borderTop: "1px dashed var(--border-color)", margin: "40px 0"}}/>
+
+          {/* MARCA PERSONAL (Módulo Fijo) */}
           <div className="client-card">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <span className="glow-tag glow-purple">Proyecto</span>
+                <span className="glow-tag glow-purple">Proyecto Fijo</span>
                 <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>Marca Personal</h2>
               </div>
               <a href="https://www.instagram.com/camiloo_oortiz/" target="_blank" style={{ color: "var(--accent)", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>@camiloo_oortiz ↗</a>
             </div>
+            
             <TaskList list={tasks.filter(t => t.category === 'personal')} />
             <TaskInput onAdd={(text) => addTask(text, 'personal')} placeholder="+ Nuevo pendiente de marca personal..." />
+            
+            {/* Textarea de Ideas de Contenido */}
+            <EditableTextarea 
+                value={marcaPersonalIdeas} 
+                onSave={updateMarcaPersonalIdeas}
+                placeholder="Escribe aquí tus ideas de contenido o inspiración. (Este texto es permanente y no se borra al limpiar tareas)..."
+                className="ideas-textarea"
+            />
           </div>
 
-          {/* ADMINISTRATIVO / ORGANIZACIÓN */}
+          {/* ADMINISTRATIVO (Módulo Fijo) */}
           <div className="client-card">
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <span className="glow-tag glow-red">Organización</span>
@@ -673,6 +775,30 @@
             </div>
             <TaskList list={tasks.filter(t => t.category === 'admin')} />
             <TaskInput onAdd={(text) => addTask(text, 'admin')} placeholder="+ Nueva tarea administrativa, correos, finanzas..." />
+          </div>
+
+          {/* Modal Overlay */}
+          <div className={`modal-overlay ${isModalOpen ? 'open' : ''}`} onClick={() => setIsModalOpen(false)}>
+            <div className="modal-card" onClick={e => e.stopPropagation()}>
+              <h2 className="font-title" style={{ margin: "0 0 24px 0", fontSize: "22px" }}>Crear Nuevo Cliente</h2>
+              
+              <label style={{display:"block", marginBottom: "8px", fontSize:"13px", color:"var(--text-muted)"}}>Nombre del Cliente/Agencia *</label>
+              <input type="text" className="modal-input" value={newClientName} onChange={e => setNewClientName(e.target.value)} placeholder="Ej. Luis Posada" autoFocus />
+              
+              <label style={{display:"block", marginBottom: "8px", fontSize:"13px", color:"var(--text-muted)"}}>Enlace (Web/Instagram) Opcional</label>
+              <input type="text" className="modal-input" value={newClientUrl} onChange={e => setNewClientUrl(e.target.value)} placeholder="https://..." />
+              
+              <label style={{display:"block", marginBottom: "8px", fontSize:"13px", color:"var(--text-muted)"}}>Tipo de Flujo</label>
+              <select className="modal-input" value={newClientType} onChange={e => setNewClientType(e.target.value)} style={{cursor: "pointer"}}>
+                <option value="Estándar">Estándar (Checklist Simple)</option>
+                <option value="Agencia">Agencia (Multi-marcas)</option>
+              </select>
+
+              <div style={{display: "flex", gap: "12px", marginTop: "24px"}}>
+                <button onClick={() => setIsModalOpen(false)} style={{flex: 1, padding: "12px", background: "transparent", border: "1px solid var(--border-color)", color: "var(--text-main)", borderRadius: "10px", cursor: "pointer"}}>Cancelar</button>
+                <button onClick={handleAddClient} style={{flex: 1, padding: "12px", background: "var(--accent)", border: "none", color: "#FFF", borderRadius: "10px", cursor: "pointer", fontWeight: "600"}}>Guardar</button>
+              </div>
+            </div>
           </div>
 
         </div>
