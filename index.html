@@ -470,131 +470,147 @@
       );
     }
 
-    // ==========================================
+// ==========================================
     // VISTA: REGISTRO DE CONTENIDO (TABLES & ACCORDION)
     // ==========================================
-    function ContentView({ clients, softDeleteClient, contentRecords, addContent, updateContent, deleteContent }) {
+    
+    // 1. Sacamos las opciones de estado afuera para que no se recreen en cada render
+    const STATUS_OPTIONS = [
+      { value: 'Sin empezar', class: 'status-todo' },
+      { value: 'En progreso', class: 'status-progress' },
+      { value: 'En revisión', class: 'status-review' },
+      { value: 'Aprobado', class: 'status-approved' },
+      { value: 'Entregado', class: 'status-delivered' }
+    ];
+
+    // 2. Extraemos el Acordeón como un componente independiente
+    const ClientTableAccordion = ({ 
+      title, projectId, isAgency, hideable, 
+      contentRecords, addContent, updateContent, deleteContent, softDeleteClient 
+    }) => {
+      const [isExpanded, setIsExpanded] = useState(true);
+      const [search, setSearch] = useState('');
+      const [sort, setSort] = useState('none');
+
+      let records = contentRecords.filter(r => r.project === projectId);
       
-      const STATUS_OPTIONS = [
-        { value: 'Sin empezar', class: 'status-todo' },
-        { value: 'En progreso', class: 'status-progress' },
-        { value: 'En revisión', class: 'status-review' },
-        { value: 'Aprobado', class: 'status-approved' },
-        { value: 'Entregado', class: 'status-delivered' }
-      ];
+      const uniqueBrands = isAgency ? [...new Set(records.map(r => r.brand).filter(Boolean))] : [];
+      const datalistId = `brands-${projectId}`;
 
-      const ClientTableAccordion = ({ title, projectId, isAgency, hideable }) => {
-        const [isExpanded, setIsExpanded] = useState(true);
-        const [search, setSearch] = useState('');
-        const [sort, setSort] = useState('none');
+      if (search) records = records.filter(r => (r.videoName || '').toLowerCase().includes(search.toLowerCase()));
+      if (sort === 'date') records.sort((a,b) => (a.dateReceived || '').localeCompare(b.dateReceived || ''));
+      if (sort === 'status') records.sort((a,b) => (a.status || '').localeCompare(b.status || ''));
 
-        let records = contentRecords.filter(r => r.project === projectId);
-        
-        // Extracción de marcas únicas para el datalist (Solo agencias)
-        const uniqueBrands = isAgency ? [...new Set(records.map(r => r.brand).filter(Boolean))] : [];
-        const datalistId = `brands-${projectId}`;
-
-        // Lógica de filtrado y ordenamiento
-        if (search) records = records.filter(r => (r.videoName || '').toLowerCase().includes(search.toLowerCase()));
-        if (sort === 'date') records.sort((a,b) => (a.dateReceived || '').localeCompare(b.dateReceived || ''));
-        if (sort === 'status') records.sort((a,b) => (a.status || '').localeCompare(b.status || ''));
-
-        return (
-          <div className="client-card">
-            
-            {/* Cabecera / Acordeón */}
-            <div className="accordion-header" onClick={() => setIsExpanded(!isExpanded)} style={{ marginBottom: isExpanded ? "16px" : "0", paddingBottom: isExpanded ? "16px" : "0", borderBottom: isExpanded ? "1px dashed var(--border-color)" : "none" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <span className={`glow-tag ${isAgency ? 'glow-orange' : (projectId==='personal' ? 'glow-purple' : 'glow-cyan')}`}>
-                  {projectId === 'personal' ? 'Fijo' : (isAgency ? 'Agencia' : 'Estándar')}
-                </span>
-                <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>{title}</h2>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                {hideable && <button onClick={(e) => { e.stopPropagation(); softDeleteClient(projectId); }} style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "16px" }} title="Ocultar Cliente">×</button>}
-                <svg className={`chevron ${isExpanded ? 'open' : ''}`} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-              </div>
+      return (
+        <div className="client-card">
+          <div className="accordion-header" onClick={() => setIsExpanded(!isExpanded)} style={{ marginBottom: isExpanded ? "16px" : "0", paddingBottom: isExpanded ? "16px" : "0", borderBottom: isExpanded ? "1px dashed var(--border-color)" : "none" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <span className={`glow-tag ${isAgency ? 'glow-orange' : (projectId==='personal' ? 'glow-purple' : 'glow-cyan')}`}>
+                {projectId === 'personal' ? 'Fijo' : (isAgency ? 'Agencia' : 'Estándar')}
+              </span>
+              <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>{title}</h2>
             </div>
-
-            {/* Contenido Colapsable */}
-            <div style={{ display: isExpanded ? 'block' : 'none' }}>
-              
-              {/* Toolbar Notion-Style */}
-              <div className="toolbar">
-                <input type="text" placeholder="Buscar video..." value={search} onChange={e => setSearch(e.target.value)} className="toolbar-input" />
-                <select value={sort} onChange={e => setSort(e.target.value)} className="toolbar-select">
-                  <option value="none">Ordenar por...</option>
-                  <option value="date">Fecha de Recepción</option>
-                  <option value="status">Estado</option>
-                </select>
-                <button onClick={() => addContent(projectId, isAgency)} style={{ background: "var(--accent)", color: "#fff", border: "none", padding: "8px 16px", borderRadius: "10px", fontSize: "13px", fontWeight: "600", cursor: "pointer", marginLeft: "auto" }}>
-                  + Añadir
-                </button>
-              </div>
-
-              {/* Datalist dinámico para marcas */}
-              {isAgency && (
-                <datalist id={datalistId}>
-                  {uniqueBrands.map(b => <option key={b} value={b} />)}
-                </datalist>
-              )}
-              
-              {/* Tabla */}
-              <div className="table-responsive">
-                <table className="content-table">
-                  <thead>
-                    <tr>
-                      <th>Nombre del video</th>
-                      {isAgency && <th>Marca</th>}
-                      <th>Recepción</th>
-                      <th>Entrega</th>
-                      <th>Estado</th>
-                      <th>Notas</th>
-                      <th style={{textAlign: "center"}}>Acción</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {records.length === 0 && (
-                      <tr>
-                        <td colSpan={isAgency ? 7 : 6} style={{ textAlign: "center", color: "var(--text-muted)", fontStyle: "italic", padding: "24px" }}>
-                          Sin registros para mostrar.
-                        </td>
-                      </tr>
-                    )}
-                    {records.map(record => (
-                      <tr key={record.id}>
-                        <td><EditableInput value={record.videoName} onSave={(val) => updateContent(record.id, 'videoName', val)} placeholder="Título del video..." /></td>
-                        {isAgency && <td><EditableInput value={record.brand} onSave={(val) => updateContent(record.id, 'brand', val)} placeholder="Seleccionar marca..." list={datalistId} /></td>}
-                        <td><input type="date" value={record.dateReceived || ''} onChange={(e) => updateContent(record.id, 'dateReceived', e.target.value)} /></td>
-                        <td><input type="date" value={record.dateDelivered || ''} onChange={(e) => updateContent(record.id, 'dateDelivered', e.target.value)} /></td>
-                        <td>
-                          <select value={record.status} onChange={(e) => updateContent(record.id, 'status', e.target.value)} className={STATUS_OPTIONS.find(o => o.value === record.status)?.class || 'status-todo'}>
-                            {STATUS_OPTIONS.map(opt => <option key={opt.value} value={opt.value} style={{background: 'var(--bg-card)', color: 'var(--text-main)'}}>{opt.value}</option>)}
-                          </select>
-                        </td>
-                        <td><EditableInput value={record.notes} onSave={(val) => updateContent(record.id, 'notes', val)} placeholder="Anotaciones..." /></td>
-                        <td style={{ textAlign: "center" }}><button onClick={() => deleteContent(record.id)} style={{ background: "transparent", border: "none", color: "#ff4757", cursor: "pointer", fontSize: "20px" }} title="Eliminar">×</button></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              {hideable && <button onClick={(e) => { e.stopPropagation(); softDeleteClient(projectId); }} style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "16px" }} title="Ocultar Cliente">×</button>}
+              <svg className={`chevron ${isExpanded ? 'open' : ''}`} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </div>
           </div>
-        );
-      };
 
+          <div style={{ display: isExpanded ? 'block' : 'none' }}>
+            <div className="toolbar">
+              <input type="text" placeholder="Buscar video..." value={search} onChange={e => setSearch(e.target.value)} className="toolbar-input" />
+              <select value={sort} onChange={e => setSort(e.target.value)} className="toolbar-select">
+                <option value="none">Ordenar por...</option>
+                <option value="date">Fecha de Recepción</option>
+                <option value="status">Estado</option>
+              </select>
+              <button onClick={() => addContent(projectId, isAgency)} style={{ background: "var(--accent)", color: "#fff", border: "none", padding: "8px 16px", borderRadius: "10px", fontSize: "13px", fontWeight: "600", cursor: "pointer", marginLeft: "auto" }}>
+                + Añadir
+              </button>
+            </div>
+
+            {isAgency && (
+              <datalist id={datalistId}>
+                {uniqueBrands.map(b => <option key={b} value={b} />)}
+              </datalist>
+            )}
+            
+            <div className="table-responsive">
+              <table className="content-table">
+                <thead>
+                  <tr>
+                    <th>Nombre del video</th>
+                    {isAgency && <th>Marca</th>}
+                    <th>Recepción</th>
+                    <th>Entrega</th>
+                    <th>Estado</th>
+                    <th>Notas</th>
+                    <th style={{textAlign: "center"}}>Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {records.length === 0 && (
+                    <tr>
+                      <td colSpan={isAgency ? 7 : 6} style={{ textAlign: "center", color: "var(--text-muted)", fontStyle: "italic", padding: "24px" }}>
+                        Sin registros para mostrar.
+                      </td>
+                    </tr>
+                  )}
+                  {records.map(record => (
+                    <tr key={record.id}>
+                      <td><EditableInput value={record.videoName} onSave={(val) => updateContent(record.id, 'videoName', val)} placeholder="Título del video..." /></td>
+                      {isAgency && <td><EditableInput value={record.brand} onSave={(val) => updateContent(record.id, 'brand', val)} placeholder="Seleccionar marca..." list={datalistId} /></td>}
+                      <td><input type="date" value={record.dateReceived || ''} onChange={(e) => updateContent(record.id, 'dateReceived', e.target.value)} /></td>
+                      <td><input type="date" value={record.dateDelivered || ''} onChange={(e) => updateContent(record.id, 'dateDelivered', e.target.value)} /></td>
+                      <td>
+                        <select value={record.status} onChange={(e) => updateContent(record.id, 'status', e.target.value)} className={STATUS_OPTIONS.find(o => o.value === record.status)?.class || 'status-todo'}>
+                          {STATUS_OPTIONS.map(opt => <option key={opt.value} value={opt.value} style={{background: 'var(--bg-card)', color: 'var(--text-main)'}}>{opt.value}</option>)}
+                        </select>
+                      </td>
+                      <td><EditableInput value={record.notes} onSave={(val) => updateContent(record.id, 'notes', val)} placeholder="Anotaciones..." /></td>
+                      <td style={{ textAlign: "center" }}><button onClick={() => deleteContent(record.id)} style={{ background: "transparent", border: "none", color: "#ff4757", cursor: "pointer", fontSize: "20px" }} title="Eliminar">×</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // 3. El componente principal ahora solo orquesta, sin re-crear funciones internas
+    function ContentView({ clients, softDeleteClient, contentRecords, addContent, updateContent, deleteContent }) {
       return (
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
           <h1 className="font-title" style={{ fontSize: "32px", margin: "0 0 32px 0" }}>Registro de Contenido</h1>
           
-          {/* Clientes Dinámicos */}
           {clients.map(client => (
-            <ClientTableAccordion key={client.id} title={client.name} projectId={client.id} isAgency={client.type === 'Agencia'} hideable={true} />
+            <ClientTableAccordion 
+              key={client.id} 
+              title={client.name} 
+              projectId={client.id} 
+              isAgency={client.type === 'Agencia'} 
+              hideable={true} 
+              contentRecords={contentRecords}
+              addContent={addContent}
+              updateContent={updateContent}
+              deleteContent={deleteContent}
+              softDeleteClient={softDeleteClient}
+            />
           ))}
 
-          {/* Módulo Fijo */}
-          <ClientTableAccordion title="Marca Personal" projectId="personal" isAgency={false} hideable={false} />
+          <ClientTableAccordion 
+            title="Marca Personal" 
+            projectId="personal" 
+            isAgency={false} 
+            hideable={false} 
+            contentRecords={contentRecords}
+            addContent={addContent}
+            updateContent={updateContent}
+            deleteContent={deleteContent}
+            softDeleteClient={softDeleteClient}
+          />
         </div>
       );
     }
