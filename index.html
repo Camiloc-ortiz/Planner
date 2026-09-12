@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard Pro - Planner</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%230044ff%22/%3E%20%3Ctext%20x%3D%2232%22%20y%3D%2244%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22800%22%20fill%3D%22%23FFFFFF%22%20text-anchor%3D%22middle%22%3E%3B%29%3C/text%3E%20%3C/svg%3E">
   
-  <!-- Tipografías -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
 
   <style>
     :root {
-      /* Dark Mode Bloqueado (Único Tema) */
+      /* Locked Dark Mode */
       --bg-main: #1a1a1a;
       --bg-sidebar: #121212;
       --bg-card: #242424;
@@ -57,7 +57,7 @@
     input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
 
     /* =========================================
-       ESTILOS ESTRUCTURALES Y SIDEBAR COLAPSABLE
+       STRUCTURAL STYLES & COLLAPSIBLE SIDEBAR
        ========================================= */
     .app-layout { display: flex; height: 100vh; flex-direction: row; }
     
@@ -83,10 +83,16 @@
     .sidebar-footer { border-top: 1px solid var(--border-color); padding: 20px 16px 0; display: flex; flex-direction: column; gap: 12px; }
     
     .main-area { flex: 1; padding: 40px 60px; overflow-y: auto; position: relative; scroll-behavior: smooth; }
+    
+    /* Layout para Clientes (2 Columnas) */
+    .clients-layout { display: flex; gap: 32px; align-items: flex-start; }
+    .clients-main { flex: 1; min-width: 0; }
+    .clients-sidebar { width: 340px; flex-shrink: 0; position: sticky; top: 0; display: flex; flex-direction: column;}
+    
     .client-card { background: var(--bg-card); border-radius: 20px; padding: 30px; margin-bottom: 32px; border: 1px solid var(--border-color); transition: all 0.3s ease; }
     .clients-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
 
-    /* Botones Menú */
+    /* Menu Buttons */
     .menu-btn {
       width: 100%; padding: 12px; border-radius: 10px; border: none; background: transparent; 
       color: var(--text-muted); font-size: 14px; font-weight: 500; cursor: pointer; 
@@ -97,7 +103,7 @@
     .menu-btn.active { color: var(--text-main); background: linear-gradient(90deg, transparent 0%, var(--menu-glow-start) 40%, var(--menu-glow-end) 100%); font-weight: 600; }
     .menu-btn.active .menu-icon { opacity: 1; stroke: var(--text-main); }
 
-    /* Efectos Glow */
+    /* Glow Effects */
     .glow-tag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
     .glow-cyan { background: rgba(0, 210, 211, 0.15); color: #00d2d3; box-shadow: 0 0 12px rgba(0, 210, 211, 0.2); border: 1px solid rgba(0, 210, 211, 0.3); }
     .glow-purple { background: rgba(156, 136, 255, 0.15); color: #9c88ff; box-shadow: 0 0 12px rgba(156, 136, 255, 0.2); border: 1px solid rgba(156, 136, 255, 0.3); }
@@ -109,13 +115,13 @@
     .checkbox-custom:checked { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
     .checkbox-custom:checked::after { content: '✓'; color: #FFF; font-size: 14px; font-weight: bold; }
     
-    /* Drag and Drop Tareas */
+    /* Drag and Drop Tasks */
     .task-item { transition: opacity 0.2s, box-shadow 0.2s; cursor: grab; }
     .task-item:active { cursor: grabbing; }
     .task-item.done span { text-decoration: line-through; opacity: 0.5; }
     .task-item.drag-over { border: 1px dashed var(--accent) !important; background: var(--bg-hover) !important; }
 
-    /* Tablas de Contenido */
+    /* Content Tables */
     .table-responsive { overflow-x: auto; width: 100%; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-main); }
     .content-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; min-width: 650px; }
     .content-table th { background: var(--bg-card); padding: 14px 16px; color: var(--text-muted); font-weight: 600; font-family: 'Space Grotesk', sans-serif; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
@@ -128,7 +134,7 @@
     
     input[type="date"] { color-scheme: dark; }
 
-    /* Estados de Contenido */
+    /* Content Statuses */
     .status-todo { background: rgba(148, 163, 184, 0.15); color: #94A3B8; border-color: rgba(148, 163, 184, 0.3); }
     .status-progress { background: rgba(0, 210, 211, 0.15); color: #00d2d3; border-color: rgba(0, 210, 211, 0.3); }
     .status-review { background: rgba(255, 159, 67, 0.15); color: #ff9f43; border-color: rgba(255, 159, 67, 0.3); }
@@ -150,16 +156,21 @@
     .chevron { transition: transform 0.3s ease; }
     .chevron.open { transform: rotate(180deg); }
     .toolbar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-    .toolbar-input { flex: 1; min-width: 200px; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 14px; border-radius: 10px; font-size: 13px; transition: border-color 0.2s; }
-    .toolbar-select { background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 14px; border-radius: 10px; font-size: 13px; cursor: pointer; transition: border-color 0.2s; }
+    .toolbar-input { flex: 1; min-width: 140px; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 14px; border-radius: 10px; font-size: 13px; transition: border-color 0.2s; }
+    .toolbar-select { background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 14px; border-radius: 10px; font-size: 13px; cursor: pointer; transition: border-color 0.2s; min-width: 120px; }
 
     /* Ideas Textarea */
     .ideas-textarea { width: 100%; min-height: 140px; background: transparent; border: none; color: var(--text-main); font-family: inherit; font-size: 14px; line-height: 1.6; resize: vertical; outline: none; padding: 16px 0; border-top: 1px dashed var(--border-color); margin-top: 20px; }
     .ideas-textarea::placeholder { color: var(--text-muted); font-style: italic; }
 
     /* =========================================
-       MEDIA QUERIES - RESPONSIVE (MÓVIL)
+       MEDIA QUERIES - RESPONSIVE (MOBILE)
        ========================================= */
+    @media (max-width: 1100px) {
+      .clients-layout { flex-direction: column; }
+      .clients-sidebar { width: 100%; position: static; }
+    }
+
     @media (max-width: 768px) {
       body { overflow: auto; }
       .app-layout { flex-direction: column; height: auto; min-height: 100vh; }
@@ -187,7 +198,7 @@
     const { useState, useEffect } = React;
 
     // ==========================================
-    // COMPONENTES REUTILIZABLES
+    // REUSABLE COMPONENTS
     // ==========================================
     const EditableInput = ({ value, onSave, type = "text", placeholder = "", style = {}, list = null }) => {
         const [localVal, setLocalVal] = useState(value || '');
@@ -201,19 +212,19 @@
         );
     };
 
-    const EditableTextarea = ({ value, onSave, placeholder = "", className = "" }) => {
+    const EditableTextarea = ({ value, onSave, placeholder = "", className = "", style = {} }) => {
         const [localVal, setLocalVal] = useState(value || '');
         useEffect(() => { setLocalVal(value || '') }, [value]);
         return (
             <textarea 
                 value={localVal} onChange={e => setLocalVal(e.target.value)}
                 onBlur={() => { if(localVal !== value) onSave(localVal) }}
-                placeholder={placeholder} className={className}
+                placeholder={placeholder} className={className} style={style}
             />
         );
     };
 
-    // CONFIGURACIÓN FIREBASE
+    // FIREBASE CONFIG
     const firebaseConfig = {
       apiKey: "AIzaSyBRJZdyVHUSNN7qDF08Zi8aFbqLbIWDFzA",
       authDomain: "weekly-planner-8486a.firebaseapp.com",
@@ -234,7 +245,9 @@
       const [clients, setClients] = useState([]);
       const [tasks, setTasks] = useState([]); 
       const [contentRecords, setContentRecords] = useState([]);
+      
       const [marcaPersonalIdeas, setMarcaPersonalIdeas] = useState("");
+      const [generalNotes, setGeneralNotes] = useState("");
       
       const [loading, setLoading] = useState(true);
 
@@ -257,13 +270,13 @@
       const loginWithGoogle = async () => {
         const provider = new firebase.auth.GoogleAuthProvider();
         try { await auth.signInWithPopup(provider); } 
-        catch (error) { console.error("Error al iniciar sesión:", error); alert("Error de autenticación. Revisa la consola."); }
+        catch (error) { console.error("Login Error:", error); alert("Authentication error. Check console."); }
       };
 
       const logout = () => { auth.signOut(); setTasks([]); setContentRecords([]); setClients([]); };
 
       // ==========================================
-      // FUNCIONES DE CARGA DE DATOS (READ)
+      // DATA LOADING FUNCTIONS (READ)
       // ==========================================
       const loadClients = (uid) => {
         db.collection('users').doc(uid).collection('clients').where('archived', '==', false).onSnapshot(snap => {
@@ -295,10 +308,13 @@
         db.collection('users').doc(uid).collection('settings').doc('marcaPersonal').onSnapshot(doc => {
             if(doc.exists) setMarcaPersonalIdeas(doc.data().ideas || "");
         });
+        db.collection('users').doc(uid).collection('settings').doc('generalNotes').onSnapshot(doc => {
+            if(doc.exists) setGeneralNotes(doc.data().text || "");
+        });
       };
 
       // ==========================================
-      // FUNCIONES CRUD
+      // CRUD FUNCTIONS
       // ==========================================
       const addClient = async (name, url, type) => {
         if (!user || !name) return;
@@ -309,13 +325,18 @@
       };
 
       const softDeleteClient = async (id) => {
-        if (!user || !window.confirm("¿Seguro que deseas ocultar este cliente? No se borrarán sus tareas ni registros.")) return;
+        if (!user || !window.confirm("Are you sure you want to hide this client? Tasks and records will not be deleted.")) return;
         await db.collection('users').doc(user.uid).collection('clients').doc(id).update({ archived: true });
       };
 
       const updateMarcaPersonalIdeas = async (val) => {
         if (!user) return;
         await db.collection('users').doc(user.uid).collection('settings').doc('marcaPersonal').set({ ideas: val }, { merge: true });
+      };
+
+      const updateGeneralNotes = async (val) => {
+        if (!user) return;
+        await db.collection('users').doc(user.uid).collection('settings').doc('generalNotes').set({ text: val }, { merge: true });
       };
 
       const addAgencyBrand = async (clientId, brandName) => {
@@ -325,13 +346,13 @@
       };
 
       const deleteAgencyBrand = async (clientId, brandName) => {
-        if (!user || !window.confirm(`¿Seguro que deseas eliminar la marca "${brandName}" y TODAS sus tareas asociadas en Proyectos?`)) return;
+        if (!user || !window.confirm(`Are you sure you want to delete the brand "${brandName}" and ALL its associated tasks?`)) return;
         
-        // 1. Eliminar marca del array
+        // 1. Remove brand from array
         const clientRef = db.collection('users').doc(user.uid).collection('clients').doc(clientId);
         await clientRef.update({ brands: firebase.firestore.FieldValue.arrayRemove(brandName) });
         
-        // 2. Eliminar tareas de esa marca
+        // 2. Delete tasks for that brand
         try {
             const snapshot = await db.collection('users').doc(user.uid).collection('tasks')
               .where('category', '==', clientId).where('brand', '==', brandName).get();
@@ -341,7 +362,7 @@
         } catch(e) { console.error(e); }
       };
 
-      // CRUD Tareas
+      // Task CRUD
       const addTask = async (text, category, brand = null) => {
         if (!text.trim() || !user) return;
         const list = tasks.filter(t => t.category === category && t.brand === brand);
@@ -367,12 +388,12 @@
           const ref = db.collection('users').doc(user.uid).collection('tasks').doc(task.id);
           batch.update(ref, { order: index });
         });
-        try { await batch.commit(); } catch(e) { console.error("Error al reordenar", e); }
+        try { await batch.commit(); } catch(e) { console.error("Error reordering", e); }
       };
 
       const clearAllTasks = async () => {
         if (!user) return;
-        if (window.confirm("¿Estás seguro de que deseas eliminar permanentemente TODAS las tareas listadas? (No afectará a las ideas de contenido ni al registro de videos)")) {
+        if (window.confirm("Are you sure you want to permanently delete ALL listed tasks? (Content ideas and records will not be affected)")) {
           try {
             const snapshot = await db.collection('users').doc(user.uid).collection('tasks').get();
             const batch = db.batch();
@@ -382,7 +403,7 @@
         }
       };
 
-      // CRUD Contenido
+      // Content CRUD
       const addContent = async (projectKey, isAgency) => {
         if (!user) return;
         await db.collection('users').doc(user.uid).collection('content_records').add({
@@ -395,19 +416,19 @@
         await db.collection('users').doc(user.uid).collection('content_records').doc(id).update({ [field]: value });
       };
       const deleteContent = async (id) => {
-        if (!user || !window.confirm("¿Deseas eliminar este registro de la tabla?")) return;
+        if (!user || !window.confirm("Do you want to delete this record from the table?")) return;
         await db.collection('users').doc(user.uid).collection('content_records').doc(id).delete();
       };
 
 
-      if (loading) return <div style={{display:'flex', height:'100vh', alignItems:'center', justifyContent:'center'}}>Cargando Dashboard...</div>;
+      if (loading) return <div style={{display:'flex', height:'100vh', alignItems:'center', justifyContent:'center'}}>Loading Dashboard...</div>;
       
       if (!user) {
         return (
           <div style={{display:'flex', height:'100vh', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:'20px'}}>
             <h1 className="font-title" style={{fontSize:'32px', margin:0}}>Planner Pro</h1>
-            <p style={{color:'var(--text-muted)'}}>Autenticación segura vinculada a tu cuenta.</p>
-            <button onClick={loginWithGoogle} style={{ background:'var(--accent)', color:'#FFF', border:'none', padding:'14px 24px', borderRadius:'12px', fontSize:'16px', fontWeight:'600', cursor:'pointer', boxShadow:'0 10px 20px var(--accent-glow)' }}>Ingresar con Google</button>
+            <p style={{color:'var(--text-muted)'}}>Secure authentication linked to your account.</p>
+            <button onClick={loginWithGoogle} style={{ background:'var(--accent)', color:'#FFF', border:'none', padding:'14px 24px', borderRadius:'12px', fontSize:'16px', fontWeight:'600', cursor:'pointer', boxShadow:'0 10px 20px var(--accent-glow)' }}>Sign in with Google</button>
           </div>
         );
       }
@@ -415,7 +436,7 @@
       return (
         <div className="app-layout">
           
-          {/* SIDEBAR COLAPSABLE */}
+          {/* COLLAPSIBLE SIDEBAR */}
           <div className="sidebar-wrapper">
             <div className="sidebar">
               <div className="sidebar-content">
@@ -423,33 +444,33 @@
                   <img src={user.photoURL} alt="User" style={{ width: "40px", height: "40px", borderRadius: "12px", flexShrink: 0 }} />
                   <div className="user-details">
                     <div className="font-title" style={{ fontSize: "16px", fontWeight: 700 }}>{user.displayName.split(' ')[0]}</div>
-                    <div style={{ color: "var(--text-muted)", fontSize: "12px" }}>Post-Producción</div>
+                    <div style={{ color: "var(--text-muted)", fontSize: "12px" }}>Post-Production</div>
                   </div>
                 </div>
 
                 <div className="sidebar-nav">
-                  <div className="menu-text" style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1px", paddingLeft: "16px", marginBottom: "4px" }}>Espacios</div>
+                  <div className="menu-text" style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1px", paddingLeft: "16px", marginBottom: "4px" }}>Workspaces</div>
                   <button className={`menu-btn ${activeTab === 'clients' ? 'active' : ''}`} onClick={() => setActiveTab('clients')}>
                     <svg className="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                    <span className="menu-text">Clientes & Proyectos</span>
+                    <span className="menu-text">Clients & Projects</span>
                   </button>
                   <button className={`menu-btn ${activeTab === 'content' ? 'active' : ''}`} onClick={() => setActiveTab('content')}>
                     <svg className="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
-                    <span className="menu-text">Registro de Contenido</span>
+                    <span className="menu-text">Content Records</span>
                   </button>
                 </div>
 
                 <div className="sidebar-footer">
                   <button onClick={logout} className="menu-btn" style={{ color: "#FF6B6B" }}>
                     <svg className="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{stroke: "#FF6B6B", opacity: 1}}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                    <span className="menu-text" style={{fontWeight: 600}}>Cerrar Sesión</span>
+                    <span className="menu-text" style={{fontWeight: 600}}>Log Out</span>
                   </button>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* ÁREA PRINCIPAL */}
+          {/* MAIN AREA */}
           <div className="main-area">
             {activeTab === 'clients' && (
               <ClientsView 
@@ -457,6 +478,7 @@
                 addAgencyBrand={addAgencyBrand} deleteAgencyBrand={deleteAgencyBrand}
                 tasks={tasks} addTask={addTask} toggleTask={toggleTask} deleteTask={deleteTask} updateTaskOrder={updateTaskOrder} clearAllTasks={clearAllTasks}
                 marcaPersonalIdeas={marcaPersonalIdeas} updateMarcaPersonalIdeas={updateMarcaPersonalIdeas}
+                generalNotes={generalNotes} updateGeneralNotes={updateGeneralNotes}
               />
             )}
             {activeTab === 'content' && (
@@ -470,34 +492,50 @@
       );
     }
 
-// ==========================================
-    // VISTA: REGISTRO DE CONTENIDO (TABLES & ACCORDION)
+    // ==========================================
+    // VIEW: CONTENT RECORDS (TABLES & ACCORDION)
     // ==========================================
     
-    // 1. Sacamos las opciones de estado afuera para que no se recreen en cada render
+    // Status Options mapped for UI (English label, Spanish DB value)
     const STATUS_OPTIONS = [
-      { value: 'Sin empezar', class: 'status-todo' },
-      { value: 'En progreso', class: 'status-progress' },
-      { value: 'En revisión', class: 'status-review' },
-      { value: 'Aprobado', class: 'status-approved' },
-      { value: 'Entregado', class: 'status-delivered' }
+      { value: 'Sin empezar', label: 'To Do', class: 'status-todo' },
+      { value: 'En progreso', label: 'In Progress', class: 'status-progress' },
+      { value: 'En revisión', label: 'In Review', class: 'status-review' },
+      { value: 'Aprobado', label: 'Approved', class: 'status-approved' },
+      { value: 'Entregado', label: 'Delivered', class: 'status-delivered' }
     ];
 
-    // 2. Extraemos el Acordeón como un componente independiente
     const ClientTableAccordion = ({ 
       title, projectId, isAgency, hideable, 
       contentRecords, addContent, updateContent, deleteContent, softDeleteClient 
     }) => {
-      const [isExpanded, setIsExpanded] = useState(true);
+      // Set to false by default as requested
+      const [isExpanded, setIsExpanded] = useState(false);
+      
       const [search, setSearch] = useState('');
       const [sort, setSort] = useState('none');
+      const [filterBrand, setFilterBrand] = useState('All');
+      const [filterMonth, setFilterMonth] = useState('All');
+      const [filterStatus, setFilterStatus] = useState('All');
 
       let records = contentRecords.filter(r => r.project === projectId);
       
       const uniqueBrands = isAgency ? [...new Set(records.map(r => r.brand).filter(Boolean))] : [];
+      const uniqueMonths = [...new Set(records.map(r => r.dateReceived ? r.dateReceived.substring(0,7) : null).filter(Boolean))].sort();
       const datalistId = `brands-${projectId}`;
 
+      // Apply Filters
       if (search) records = records.filter(r => (r.videoName || '').toLowerCase().includes(search.toLowerCase()));
+      if (filterBrand !== 'All') records = records.filter(r => r.brand === filterBrand);
+      if (filterStatus !== 'All') records = records.filter(r => r.status === filterStatus);
+      if (filterMonth !== 'All') {
+          records = records.filter(r => {
+              if (!r.dateReceived) return false;
+              return r.dateReceived.substring(0, 7) === filterMonth;
+          });
+      }
+
+      // Apply Sort
       if (sort === 'date') records.sort((a,b) => (a.dateReceived || '').localeCompare(b.dateReceived || ''));
       if (sort === 'status') records.sort((a,b) => (a.status || '').localeCompare(b.status || ''));
 
@@ -506,26 +544,45 @@
           <div className="accordion-header" onClick={() => setIsExpanded(!isExpanded)} style={{ marginBottom: isExpanded ? "16px" : "0", paddingBottom: isExpanded ? "16px" : "0", borderBottom: isExpanded ? "1px dashed var(--border-color)" : "none" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <span className={`glow-tag ${isAgency ? 'glow-orange' : (projectId==='personal' ? 'glow-purple' : 'glow-cyan')}`}>
-                {projectId === 'personal' ? 'Fijo' : (isAgency ? 'Agencia' : 'Estándar')}
+                {projectId === 'personal' ? 'Fixed' : (isAgency ? 'Agency' : 'Standard')}
               </span>
               <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>{title}</h2>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              {hideable && <button onClick={(e) => { e.stopPropagation(); softDeleteClient(projectId); }} style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "16px" }} title="Ocultar Cliente">×</button>}
+              {hideable && <button onClick={(e) => { e.stopPropagation(); softDeleteClient(projectId); }} style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "16px" }} title="Hide Client">×</button>}
               <svg className={`chevron ${isExpanded ? 'open' : ''}`} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </div>
           </div>
 
           <div style={{ display: isExpanded ? 'block' : 'none' }}>
             <div className="toolbar">
-              <input type="text" placeholder="Buscar video..." value={search} onChange={e => setSearch(e.target.value)} className="toolbar-input" />
-              <select value={sort} onChange={e => setSort(e.target.value)} className="toolbar-select">
-                <option value="none">Ordenar por...</option>
-                <option value="date">Fecha de Recepción</option>
-                <option value="status">Estado</option>
+              <input type="text" placeholder="Search video..." value={search} onChange={e => setSearch(e.target.value)} className="toolbar-input" />
+              
+              {isAgency && (
+                <select value={filterBrand} onChange={e => setFilterBrand(e.target.value)} className="toolbar-select">
+                  <option value="All">All Brands</option>
+                  {uniqueBrands.map(b => <option key={b} value={b}>{b}</option>)}
+                </select>
+              )}
+
+              <select value={filterMonth} onChange={e => setFilterMonth(e.target.value)} className="toolbar-select">
+                <option value="All">All Months</option>
+                {uniqueMonths.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
+
+              <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="toolbar-select">
+                <option value="All">All Statuses</option>
+                {STATUS_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              </select>
+
+              <select value={sort} onChange={e => setSort(e.target.value)} className="toolbar-select">
+                <option value="none">Sort by...</option>
+                <option value="date">Date Received</option>
+                <option value="status">Status</option>
+              </select>
+              
               <button onClick={() => addContent(projectId, isAgency)} style={{ background: "var(--accent)", color: "#fff", border: "none", padding: "8px 16px", borderRadius: "10px", fontSize: "13px", fontWeight: "600", cursor: "pointer", marginLeft: "auto" }}>
-                + Añadir
+                + Add
               </button>
             </div>
 
@@ -539,36 +596,36 @@
               <table className="content-table">
                 <thead>
                   <tr>
-                    <th>Nombre del video</th>
-                    {isAgency && <th>Marca</th>}
-                    <th>Recepción</th>
-                    <th>Entrega</th>
-                    <th>Estado</th>
-                    <th>Notas</th>
-                    <th style={{textAlign: "center"}}>Acción</th>
+                    <th>Video Name</th>
+                    {isAgency && <th>Brand</th>}
+                    <th>Received</th>
+                    <th>Delivered</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                    <th style={{textAlign: "center"}}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {records.length === 0 && (
                     <tr>
                       <td colSpan={isAgency ? 7 : 6} style={{ textAlign: "center", color: "var(--text-muted)", fontStyle: "italic", padding: "24px" }}>
-                        Sin registros para mostrar.
+                        No records to display.
                       </td>
                     </tr>
                   )}
                   {records.map(record => (
                     <tr key={record.id}>
-                      <td><EditableInput value={record.videoName} onSave={(val) => updateContent(record.id, 'videoName', val)} placeholder="Título del video..." /></td>
-                      {isAgency && <td><EditableInput value={record.brand} onSave={(val) => updateContent(record.id, 'brand', val)} placeholder="Seleccionar marca..." list={datalistId} /></td>}
+                      <td><EditableInput value={record.videoName} onSave={(val) => updateContent(record.id, 'videoName', val)} placeholder="Video title..." /></td>
+                      {isAgency && <td><EditableInput value={record.brand} onSave={(val) => updateContent(record.id, 'brand', val)} placeholder="Select brand..." list={datalistId} /></td>}
                       <td><input type="date" value={record.dateReceived || ''} onChange={(e) => updateContent(record.id, 'dateReceived', e.target.value)} /></td>
                       <td><input type="date" value={record.dateDelivered || ''} onChange={(e) => updateContent(record.id, 'dateDelivered', e.target.value)} /></td>
                       <td>
                         <select value={record.status} onChange={(e) => updateContent(record.id, 'status', e.target.value)} className={STATUS_OPTIONS.find(o => o.value === record.status)?.class || 'status-todo'}>
-                          {STATUS_OPTIONS.map(opt => <option key={opt.value} value={opt.value} style={{background: 'var(--bg-card)', color: 'var(--text-main)'}}>{opt.value}</option>)}
+                          {STATUS_OPTIONS.map(opt => <option key={opt.value} value={opt.value} style={{background: 'var(--bg-card)', color: 'var(--text-main)'}}>{opt.label}</option>)}
                         </select>
                       </td>
-                      <td><EditableInput value={record.notes} onSave={(val) => updateContent(record.id, 'notes', val)} placeholder="Anotaciones..." /></td>
-                      <td style={{ textAlign: "center" }}><button onClick={() => deleteContent(record.id)} style={{ background: "transparent", border: "none", color: "#ff4757", cursor: "pointer", fontSize: "20px" }} title="Eliminar">×</button></td>
+                      <td><EditableInput value={record.notes} onSave={(val) => updateContent(record.id, 'notes', val)} placeholder="Notes..." /></td>
+                      <td style={{ textAlign: "center" }}><button onClick={() => deleteContent(record.id)} style={{ background: "transparent", border: "none", color: "#ff4757", cursor: "pointer", fontSize: "20px" }} title="Delete">×</button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -579,11 +636,10 @@
       );
     };
 
-    // 3. El componente principal ahora solo orquesta, sin re-crear funciones internas
     function ContentView({ clients, softDeleteClient, contentRecords, addContent, updateContent, deleteContent }) {
       return (
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-          <h1 className="font-title" style={{ fontSize: "32px", margin: "0 0 32px 0" }}>Registro de Contenido</h1>
+          <h1 className="font-title" style={{ fontSize: "32px", margin: "0 0 32px 0" }}>Content Records</h1>
           
           {clients.map(client => (
             <ClientTableAccordion 
@@ -601,7 +657,7 @@
           ))}
 
           <ClientTableAccordion 
-            title="Marca Personal" 
+            title="Personal Brand" 
             projectId="personal" 
             isAgency={false} 
             hideable={false} 
@@ -616,9 +672,9 @@
     }
 
     // ==========================================
-    // VISTA CLIENTES & PROYECTOS (DRAG & DROP + DINAMISMO)
+    // VIEW: CLIENTS & PROJECTS (DRAG & DROP + LAYOUT)
     // ==========================================
-    function ClientsView({ clients, addClient, softDeleteClient, addAgencyBrand, deleteAgencyBrand, tasks, addTask, toggleTask, deleteTask, updateTaskOrder, clearAllTasks, marcaPersonalIdeas, updateMarcaPersonalIdeas }) {
+    function ClientsView({ clients, addClient, softDeleteClient, addAgencyBrand, deleteAgencyBrand, tasks, addTask, toggleTask, deleteTask, updateTaskOrder, clearAllTasks, marcaPersonalIdeas, updateMarcaPersonalIdeas, generalNotes, updateGeneralNotes }) {
       
       const [isModalOpen, setIsModalOpen] = useState(false);
       const [newClientName, setNewClientName] = useState("");
@@ -644,7 +700,6 @@
         );
       };
 
-      // Drag & Drop List
       const TaskList = ({ list }) => {
         const [draggedId, setDraggedId] = useState(null);
         const [dragOverId, setDragOverId] = useState(null);
@@ -667,7 +722,7 @@
 
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "16px" }}>
-            {list.length === 0 && <div style={{ color: "var(--text-muted)", fontSize: "13px", fontStyle: "italic" }}>No hay pendientes.</div>}
+            {list.length === 0 && <div style={{ color: "var(--text-muted)", fontSize: "13px", fontStyle: "italic" }}>No pending tasks.</div>}
             {list.map(t => (
               <div 
                 key={t.id} draggable onDragStart={(e) => handleDragStart(e, t.id)} onDragOver={(e) => handleDragOver(e, t.id)} onDrop={(e) => handleDrop(e, t.id)}
@@ -684,135 +739,154 @@
       };
 
       return (
-        <div style={{ maxWidth: "1000px", margin: "0 auto", paddingBottom: "60px" }}>
+        <div style={{ maxWidth: "1400px", margin: "0 auto", paddingBottom: "60px" }}>
           
           <div className="page-header-flex" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
-            <h1 className="font-title" style={{ fontSize: "32px", margin: 0 }}>Clientes & Proyectos</h1>
+            <h1 className="font-title" style={{ fontSize: "32px", margin: 0 }}>Clients & Projects</h1>
             <div style={{display: "flex", gap: "12px"}}>
                 <button onClick={() => setIsModalOpen(true)} className="fab-btn">
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                  Nuevo Cliente
+                  New Client
                 </button>
                 <button 
                 onClick={clearAllTasks}
                 style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(255, 71, 87, 0.1)", color: "#ff4757", border: "1px solid rgba(255, 71, 87, 0.3)", padding: "8px 16px", borderRadius: "30px", fontSize: "13px", fontWeight: "600", cursor: "pointer", transition: "all 0.2s" }}
                 >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width: "16px", height: "16px"}}><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                Limpiar todo
+                Clear all
                 </button>
             </div>
           </div>
 
-          {/* RENDERIZADO DINÁMICO DE CLIENTES */}
-          {clients.map(client => {
-            if (client.type === 'Estándar') {
-              return (
-                <div key={client.id} className="client-card" style={{ position: "relative" }}>
-                  <button onClick={() => softDeleteClient(client.id)} style={{ position: "absolute", top: "20px", right: "20px", background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "18px" }}>×</button>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingRight: "30px", flexWrap: "wrap", gap: "10px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <span className="glow-tag glow-cyan">Cliente</span>
-                      <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>{client.name}</h2>
-                    </div>
-                    {client.url && <a href={client.url} target="_blank" style={{ color: "var(--accent)", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>Enlace ↗</a>}
-                  </div>
-                  <TaskList list={tasks.filter(t => t.category === client.id)} />
-                  <TaskInput onAdd={(text) => addTask(text, client.id)} placeholder={`+ Nuevo pendiente para ${client.name}...`} />
-                </div>
-              );
-            } 
-            else if (client.type === 'Agencia') {
-              const agencyBrands = client.brands || [];
-              return (
-                <div key={client.id} className="client-card" style={{ position: "relative" }}>
-                  <button onClick={() => softDeleteClient(client.id)} style={{ position: "absolute", top: "20px", right: "20px", background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "18px" }}>×</button>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingRight: "30px", marginBottom: "24px", flexWrap: "wrap", gap: "10px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        <span className="glow-tag glow-orange">Agencia</span>
-                        <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>{client.name}</h2>
-                      </div>
-                      {client.url && <a href={client.url} target="_blank" style={{ color: "var(--accent)", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>Enlace ↗</a>}
-                  </div>
-                  
-                  <div className="clients-grid">
-                    {agencyBrands.map(brand => (
-                      <div key={brand} style={{ background: "var(--bg-main)", padding: "20px", borderRadius: "16px", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", position: "relative" }}>
-                        <button onClick={() => deleteAgencyBrand(client.id, brand)} style={{ position: "absolute", top: "16px", right: "16px", background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "16px", padding: "4px" }}>×</button>
-                        <h3 className="font-title" style={{ margin: "0 0 16px 0", fontSize: "16px", color: "var(--text-muted)", paddingRight: "20px" }}>{brand}</h3>
-                        <div style={{ flex: 1 }}>
-                          <TaskList list={tasks.filter(t => t.category === client.id && t.brand === brand)} />
+          <div className="clients-layout">
+            {/* COLUMN 1: CLIENT LIST */}
+            <div className="clients-main">
+              {clients.map(client => {
+                if (client.type === 'Estándar') {
+                  return (
+                    <div key={client.id} className="client-card" style={{ position: "relative" }}>
+                      <button onClick={() => softDeleteClient(client.id)} style={{ position: "absolute", top: "20px", right: "20px", background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "18px" }}>×</button>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingRight: "30px", flexWrap: "wrap", gap: "10px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                          <span className="glow-tag glow-cyan">Client</span>
+                          <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>{client.name}</h2>
                         </div>
-                        <TaskInput onAdd={(text) => addTask(text, client.id, brand)} placeholder={`+ Tarea para ${brand}`} />
+                        {client.url && <a href={client.url} target="_blank" style={{ color: "var(--accent)", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>Link ↗</a>}
                       </div>
-                    ))}
-                    
-                    <div style={{ border: "2px dashed var(--border-color)", borderRadius: "16px", padding: "20px", display: "flex", alignItems: "center", justifyContent: "center", minHeight: "150px" }}>
-                      <input 
-                        type="text" placeholder="+ Agregar Marca" 
-                        onKeyDown={e => { if (e.key === 'Enter' && e.target.value) { addAgencyBrand(client.id, e.target.value); e.target.value=''; } }}
-                        style={{ background: "transparent", border: "none", textAlign: "center", color: "var(--text-main)", fontSize: "14px", width: "100%", outline: "none" }}
-                      />
+                      <TaskList list={tasks.filter(t => t.category === client.id)} />
+                      <TaskInput onAdd={(text) => addTask(text, client.id)} placeholder={`+ New task for ${client.name}...`} />
                     </div>
+                  );
+                } 
+                else if (client.type === 'Agencia') {
+                  const agencyBrands = client.brands || [];
+                  return (
+                    <div key={client.id} className="client-card" style={{ position: "relative" }}>
+                      <button onClick={() => softDeleteClient(client.id)} style={{ position: "absolute", top: "20px", right: "20px", background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "18px" }}>×</button>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingRight: "30px", marginBottom: "24px", flexWrap: "wrap", gap: "10px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                            <span className="glow-tag glow-orange">Agency</span>
+                            <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>{client.name}</h2>
+                          </div>
+                          {client.url && <a href={client.url} target="_blank" style={{ color: "var(--accent)", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>Link ↗</a>}
+                      </div>
+                      
+                      <div className="clients-grid">
+                        {agencyBrands.map(brand => (
+                          <div key={brand} style={{ background: "var(--bg-main)", padding: "20px", borderRadius: "16px", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", position: "relative" }}>
+                            <button onClick={() => deleteAgencyBrand(client.id, brand)} style={{ position: "absolute", top: "16px", right: "16px", background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "16px", padding: "4px" }}>×</button>
+                            <h3 className="font-title" style={{ margin: "0 0 16px 0", fontSize: "16px", color: "var(--text-muted)", paddingRight: "20px" }}>{brand}</h3>
+                            <div style={{ flex: 1 }}>
+                              <TaskList list={tasks.filter(t => t.category === client.id && t.brand === brand)} />
+                            </div>
+                            <TaskInput onAdd={(text) => addTask(text, client.id, brand)} placeholder={`+ Task for ${brand}`} />
+                          </div>
+                        ))}
+                        
+                        <div style={{ border: "2px dashed var(--border-color)", borderRadius: "16px", padding: "20px", display: "flex", alignItems: "center", justifyContent: "center", minHeight: "150px" }}>
+                          <input 
+                            type="text" placeholder="+ Add Brand" 
+                            onKeyDown={e => { if (e.key === 'Enter' && e.target.value) { addAgencyBrand(client.id, e.target.value); e.target.value=''; } }}
+                            style={{ background: "transparent", border: "none", textAlign: "center", color: "var(--text-main)", fontSize: "14px", width: "100%", outline: "none" }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+              })}
+
+              <hr style={{border: "none", borderTop: "1px dashed var(--border-color)", margin: "40px 0"}}/>
+
+              {/* PERSONAL BRAND */}
+              <div className="client-card">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <span className="glow-tag glow-purple">Fixed Project</span>
+                    <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>Personal Brand</h2>
                   </div>
+                  <a href="https://www.instagram.com/camiloo_oortiz/" target="_blank" style={{ color: "var(--accent)", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>@camiloo_oortiz ↗</a>
                 </div>
-              );
-            }
-          })}
-
-          <hr style={{border: "none", borderTop: "1px dashed var(--border-color)", margin: "40px 0"}}/>
-
-          {/* MARCA PERSONAL (Módulo Fijo) */}
-          <div className="client-card">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <span className="glow-tag glow-purple">Proyecto Fijo</span>
-                <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>Marca Personal</h2>
+                
+                <TaskList list={tasks.filter(t => t.category === 'personal')} />
+                <TaskInput onAdd={(text) => addTask(text, 'personal')} placeholder="+ New personal brand task..." />
+                
+                <EditableTextarea 
+                    value={marcaPersonalIdeas} 
+                    onSave={updateMarcaPersonalIdeas}
+                    placeholder="Write your content ideas or inspiration here. (This text is permanent)..."
+                    className="ideas-textarea"
+                />
               </div>
-              <a href="https://www.instagram.com/camiloo_oortiz/" target="_blank" style={{ color: "var(--accent)", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>@camiloo_oortiz ↗</a>
-            </div>
-            
-            <TaskList list={tasks.filter(t => t.category === 'personal')} />
-            <TaskInput onAdd={(text) => addTask(text, 'personal')} placeholder="+ Nuevo pendiente de marca personal..." />
-            
-            {/* Textarea de Ideas de Contenido */}
-            <EditableTextarea 
-                value={marcaPersonalIdeas} 
-                onSave={updateMarcaPersonalIdeas}
-                placeholder="Escribe aquí tus ideas de contenido o inspiración. (Este texto es permanente y no se borra al limpiar tareas)..."
-                className="ideas-textarea"
-            />
-          </div>
 
-          {/* ADMINISTRATIVO (Módulo Fijo) */}
-          <div className="client-card">
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <span className="glow-tag glow-red">Organización</span>
-              <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>Gestión Administrativa</h2>
+              {/* ORGANIZATION */}
+              <div className="client-card">
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <span className="glow-tag glow-red">Organization</span>
+                  <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>Administrative Management</h2>
+                </div>
+                <TaskList list={tasks.filter(t => t.category === 'admin')} />
+                <TaskInput onAdd={(text) => addTask(text, 'admin')} placeholder="+ New administrative task, emails, finances..." />
+              </div>
             </div>
-            <TaskList list={tasks.filter(t => t.category === 'admin')} />
-            <TaskInput onAdd={(text) => addTask(text, 'admin')} placeholder="+ Nueva tarea administrativa, correos, finanzas..." />
-          </div>
+
+            {/* COLUMN 2: FIXED RIGHT SIDEBAR (NOTEPAD) */}
+            <div className="client-card clients-sidebar">
+               <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+                 <span className="glow-tag glow-green">Notepad</span>
+                 <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>Quick Ideas</h2>
+               </div>
+               <EditableTextarea 
+                    value={generalNotes} 
+                    onSave={updateGeneralNotes}
+                    placeholder="Write your loose ideas, upcoming tasks, or content inspiration here. This section is automatically saved and will stay here as you scroll..."
+                    className="ideas-textarea"
+                    style={{ marginTop: 0, borderTop: "none", minHeight: "50vh", flex: 1 }}
+                />
+            </div>
+
+          </div> {/* End Clients Layout */}
 
           {/* Modal Overlay */}
           <div className={`modal-overlay ${isModalOpen ? 'open' : ''}`} onClick={() => setIsModalOpen(false)}>
             <div className="modal-card" onClick={e => e.stopPropagation()}>
-              <h2 className="font-title" style={{ margin: "0 0 24px 0", fontSize: "22px" }}>Crear Nuevo Cliente</h2>
+              <h2 className="font-title" style={{ margin: "0 0 24px 0", fontSize: "22px" }}>Create New Client</h2>
               
-              <label style={{display:"block", marginBottom: "8px", fontSize:"13px", color:"var(--text-muted)"}}>Nombre del Cliente/Agencia *</label>
-              <input type="text" className="modal-input" value={newClientName} onChange={e => setNewClientName(e.target.value)} placeholder="Ej. Luis Posada" autoFocus />
+              <label style={{display:"block", marginBottom: "8px", fontSize:"13px", color:"var(--text-muted)"}}>Client/Agency Name *</label>
+              <input type="text" className="modal-input" value={newClientName} onChange={e => setNewClientName(e.target.value)} placeholder="E.g. John Doe" autoFocus />
               
-              <label style={{display:"block", marginBottom: "8px", fontSize:"13px", color:"var(--text-muted)"}}>Enlace (Web/Instagram) Opcional</label>
+              <label style={{display:"block", marginBottom: "8px", fontSize:"13px", color:"var(--text-muted)"}}>Link (Web/Instagram) Optional</label>
               <input type="text" className="modal-input" value={newClientUrl} onChange={e => setNewClientUrl(e.target.value)} placeholder="https://..." />
               
-              <label style={{display:"block", marginBottom: "8px", fontSize:"13px", color:"var(--text-muted)"}}>Tipo de Flujo</label>
+              <label style={{display:"block", marginBottom: "8px", fontSize:"13px", color:"var(--text-muted)"}}>Workflow Type</label>
               <select className="modal-input" value={newClientType} onChange={e => setNewClientType(e.target.value)} style={{cursor: "pointer"}}>
-                <option value="Estándar">Estándar (Checklist Simple)</option>
-                <option value="Agencia">Agencia (Multi-marcas)</option>
+                <option value="Estándar">Standard (Simple Checklist)</option>
+                <option value="Agencia">Agency (Multi-brand)</option>
               </select>
 
               <div style={{display: "flex", gap: "12px", marginTop: "24px"}}>
-                <button onClick={() => setIsModalOpen(false)} style={{flex: 1, padding: "12px", background: "transparent", border: "1px solid var(--border-color)", color: "var(--text-main)", borderRadius: "10px", cursor: "pointer"}}>Cancelar</button>
-                <button onClick={handleAddClient} style={{flex: 1, padding: "12px", background: "var(--accent)", border: "none", color: "#FFF", borderRadius: "10px", cursor: "pointer", fontWeight: "600"}}>Guardar</button>
+                <button onClick={() => setIsModalOpen(false)} style={{flex: 1, padding: "12px", background: "transparent", border: "1px solid var(--border-color)", color: "var(--text-main)", borderRadius: "10px", cursor: "pointer"}}>Cancel</button>
+                <button onClick={handleAddClient} style={{flex: 1, padding: "12px", background: "var(--accent)", border: "none", color: "#FFF", borderRadius: "10px", cursor: "pointer", fontWeight: "600"}}>Save</button>
               </div>
             </div>
           </div>
