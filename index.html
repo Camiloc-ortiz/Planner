@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Pro - Planner</title>
+  <title>Dashboard Pro - ERP</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%230044ff%22/%3E%20%3Ctext%20x%3D%2232%22%20y%3D%2244%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22800%22%20fill%3D%22%23FFFFFF%22%20text-anchor%3D%22middle%22%3E%3B%29%3C/text%3E%20%3C/svg%3E">
   
   <!-- Fonts -->
@@ -70,10 +70,7 @@
     }
     .sidebar:hover { width: 260px; box-shadow: 6px 0 24px rgba(0,0,0,0.5); }
     
-    .sidebar-content { 
-      width: 260px; height: 100%; padding: 32px 0; 
-      display: flex; flex-direction: column;
-    }
+    .sidebar-content { width: 260px; height: 100%; padding: 32px 0; display: flex; flex-direction: column; }
     .sidebar-header { padding: 0 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 40px; }
     
     .user-details, .menu-text { opacity: 0; transition: opacity 0.2s ease; white-space: nowrap; }
@@ -84,13 +81,9 @@
     
     .main-area { flex: 1; padding: 40px 60px; overflow-y: auto; position: relative; scroll-behavior: smooth; }
     
-    /* Layout para Clientes (2 Columnas) */
-    .clients-layout { display: flex; gap: 32px; align-items: flex-start; }
-    .clients-main { flex: 1; min-width: 0; }
-    .clients-sidebar { width: 340px; flex-shrink: 0; position: sticky; top: 0; display: flex; flex-direction: column;}
-    
-    .client-card { background: var(--bg-card); border-radius: 20px; padding: 30px; margin-bottom: 32px; border: 1px solid var(--border-color); transition: all 0.3s ease; }
-    .clients-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+    .card { background: var(--bg-card); border-radius: 20px; padding: 30px; margin-bottom: 32px; border: 1px solid var(--border-color); transition: all 0.3s ease; }
+    .grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 32px; }
 
     /* Menu Buttons */
     .menu-btn {
@@ -111,19 +104,9 @@
     .glow-red { background: rgba(255, 71, 87, 0.15); color: #ff4757; box-shadow: 0 0 12px rgba(255, 71, 87, 0.2); border: 1px solid rgba(255, 71, 87, 0.3); }
     .glow-green { background: rgba(46, 213, 115, 0.15); color: #2ed573; box-shadow: 0 0 12px rgba(46, 213, 115, 0.2); border: 1px solid rgba(46, 213, 115, 0.3); }
 
-    .checkbox-custom { appearance: none; width: 20px; height: 20px; flex-shrink: 0; border: 2px solid var(--border-color); border-radius: 6px; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-    .checkbox-custom:checked { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
-    .checkbox-custom:checked::after { content: '✓'; color: #FFF; font-size: 14px; font-weight: bold; }
-    
-    /* Drag and Drop Tasks */
-    .task-item { transition: opacity 0.2s, box-shadow 0.2s; cursor: grab; }
-    .task-item:active { cursor: grabbing; }
-    .task-item.done span { text-decoration: line-through; opacity: 0.5; }
-    .task-item.drag-over { border: 1px dashed var(--accent) !important; background: var(--bg-hover) !important; }
-
     /* Content Tables */
     .table-responsive { overflow-x: auto; width: 100%; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-main); }
-    .content-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; min-width: 650px; }
+    .content-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; min-width: 800px; }
     .content-table th { background: var(--bg-card); padding: 14px 16px; color: var(--text-muted); font-weight: 600; font-family: 'Space Grotesk', sans-serif; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
     .content-table td { padding: 10px 16px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
     .content-table tr:last-child td { border-bottom: none; }
@@ -147,7 +130,7 @@
     
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .modal-overlay.open { opacity: 1; pointer-events: all; }
-    .modal-card { background: var(--bg-card); padding: 32px; border-radius: 24px; border: 1px solid var(--border-color); width: 100%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .modal-card { background: var(--bg-card); padding: 32px; border-radius: 24px; border: 1px solid var(--border-color); width: 100%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-height: 90vh; overflow-y: auto;}
     .modal-overlay.open .modal-card { transform: translateY(0); }
     .modal-input { width: 100%; background: var(--bg-main); border: 1px solid var(--border-color); padding: 14px 16px; border-radius: 12px; color: var(--text-main); font-size: 14px; margin-bottom: 16px; }
     
@@ -159,36 +142,30 @@
     .toolbar-input { flex: 1; min-width: 140px; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 14px; border-radius: 10px; font-size: 13px; transition: border-color 0.2s; }
     .toolbar-select { background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 14px; border-radius: 10px; font-size: 13px; cursor: pointer; transition: border-color 0.2s; min-width: 120px; }
 
-    /* Ideas Textarea */
-    .ideas-textarea { width: 100%; min-height: 140px; background: transparent; border: none; color: var(--text-main); font-family: inherit; font-size: 14px; line-height: 1.6; resize: vertical; outline: none; padding: 16px 0; border-top: 1px dashed var(--border-color); margin-top: 20px; }
-    .ideas-textarea::placeholder { color: var(--text-muted); font-style: italic; }
-
-    /* =========================================
-       MEDIA QUERIES - RESPONSIVE (MOBILE)
-       ========================================= */
-    @media (max-width: 1100px) {
-      .clients-layout { flex-direction: column; }
-      .clients-sidebar { width: 100%; position: static; }
+    /* PRINT STYLES FOR INVOICE */
+    @media print {
+      body * { visibility: hidden; }
+      .app-layout { display: none !important; }
+      #print-area, #print-area * { visibility: visible; }
+      #print-area { position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 20px; }
+      .no-print { display: none !important; }
     }
 
-    @media (max-width: 768px) {
-      body { overflow: auto; }
-      .app-layout { flex-direction: column; height: auto; min-height: 100vh; }
-      
-      .sidebar-wrapper { width: 100%; height: auto; z-index: 10; }
-      .sidebar { position: static; width: 100% !important; height: auto; border-right: none; border-bottom: 1px solid var(--border-color); overflow: visible; box-shadow: none !important; }
-      .sidebar-content { width: 100%; padding: 16px; }
-      
-      .menu-text, .user-details { opacity: 1; white-space: normal; }
-      .sidebar-header { margin-bottom: 16px; justify-content: space-between; padding: 0; }
-      .sidebar-nav { flex-direction: row; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; padding: 0; }
-      .menu-btn { padding: 10px; justify-content: center; flex: 1; min-width: 140px; }
-      .sidebar-footer { padding-top: 16px; flex-direction: row; justify-content: center; }
-      
-      .main-area { padding: 20px 16px; overflow: visible; }
-      .client-card { padding: 20px; margin-bottom: 24px; }
-      .page-header-flex { flex-direction: column; align-items: flex-start !important; gap: 16px; }
-    }
+    /* Invoice Canvas (Web View) */
+    .invoice-canvas { background: #FFFFFF; color: #000000; padding: 60px; max-width: 800px; margin: 0 auto; font-family: 'Inter', sans-serif; box-shadow: 0 0 30px rgba(0,0,0,0.5); position: relative;}
+    .invoice-header { display: flex; justify-content: space-between; margin-bottom: 40px; border-bottom: 2px solid #EEE; padding-bottom: 20px;}
+    .invoice-title { font-size: 28px; font-weight: 700; color: #1a1a1a; margin: 0; font-family: 'Space Grotesk', sans-serif;}
+    .invoice-meta { text-align: right; font-size: 14px; color: #666; }
+    .invoice-details { display: flex; justify-content: space-between; margin-bottom: 40px; font-size: 14px;}
+    .invoice-details h4 { margin: 0 0 8px 0; color: #888; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;}
+    .invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 14px; }
+    .invoice-table th { text-align: left; padding: 12px 8px; border-bottom: 2px solid #EEE; color: #666; }
+    .invoice-table td { padding: 12px 8px; border-bottom: 1px solid #EEE; }
+    .invoice-total { display: flex; justify-content: flex-end; font-size: 18px; margin-bottom: 50px; }
+    .invoice-total-box { background: #F8F9FA; padding: 20px 30px; border-radius: 8px; text-align: right; min-width: 300px;}
+    .invoice-footer { display: flex; justify-content: space-between; font-size: 12px; color: #666; align-items: flex-end;}
+    .invoice-signature { text-align: center; margin-top: 40px;}
+
   </style>
 </head>
 <body>
@@ -197,9 +174,43 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-    // ==========================================
-    // REUSABLE COMPONENTS
-    // ==========================================
+    // Helper: Formato COP
+    const formatCOP = (val) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(val || 0);
+
+    // Helper: Número a letras (Simple para Facturas)
+    function numeroALetras(num) {
+        if (!num || num === 0) return "Cero pesos";
+        const unidades = ["", "un", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve"];
+        const decenas = ["", "diez", "veinte", "treinta", "cuarenta", "cincuenta", "sesenta", "setenta", "ochenta", "noventa"];
+        const especiales = {11:"once", 12:"doce", 13:"trece", 14:"catorce", 15:"quince", 16:"dieciséis", 17:"diecisiete", 18:"dieciocho", 19:"diecinueve", 21:"veintiún", 22:"veintidós", 23:"veintitrés", 24:"veinticuatro", 25:"veinticinco", 26:"veintiséis", 27:"veintisiete", 28:"veintiocho", 29:"veintinueve"};
+        
+        function decenar(n) {
+            if (n < 10) return unidades[n];
+            if (n >= 11 && n <= 19) return especiales[n];
+            if (n >= 21 && n <= 29) return especiales[n];
+            if (n % 10 === 0) return decenas[n/10];
+            return decenas[Math.floor(n/10)] + " y " + unidades[n%10];
+        }
+        function centenar(n) {
+            if (n === 100) return "cien";
+            const centenas = ["", "ciento", "doscientos", "trescientos", "cuatrocientos", "quinientos", "seiscientos", "setecientos", "ochocientos", "novecientos"];
+            if (n < 100) return decenar(n);
+            return centenas[Math.floor(n/100)] + (n%100 > 0 ? " " + decenar(n%100) : "");
+        }
+        function millares(n) {
+            if (n < 1000) return centenar(n);
+            if (n === 1000) return "mil " + centenar(n%1000);
+            return centenar(Math.floor(n/1000)) + " mil " + (n%1000 > 0 ? centenar(n%1000) : "");
+        }
+        function millones(n) {
+            if (n < 1000000) return millares(n);
+            if (n === 1000000) return "un millón " + millares(n%1000000);
+            return millares(Math.floor(n/1000000)) + " millones " + (n%1000000 > 0 ? millares(n%1000000) : "");
+        }
+        let texto = millones(num).trim();
+        return texto.charAt(0).toUpperCase() + texto.slice(1) + " pesos";
+    }
+
     const EditableInput = ({ value, onSave, type = "text", placeholder = "", style = {}, list = null }) => {
         const [localVal, setLocalVal] = useState(value || '');
         useEffect(() => { setLocalVal(value || '') }, [value]);
@@ -208,18 +219,6 @@
                 type={type} value={localVal} onChange={e => setLocalVal(e.target.value)}
                 onBlur={() => { if(localVal !== value) onSave(localVal) }}
                 placeholder={placeholder} style={style} list={list}
-            />
-        );
-    };
-
-    const EditableTextarea = ({ value, onSave, placeholder = "", className = "", style = {} }) => {
-        const [localVal, setLocalVal] = useState(value || '');
-        useEffect(() => { setLocalVal(value || '') }, [value]);
-        return (
-            <textarea 
-                value={localVal} onChange={e => setLocalVal(e.target.value)}
-                onBlur={() => { if(localVal !== value) onSave(localVal) }}
-                placeholder={placeholder} className={className} style={style}
             />
         );
     };
@@ -240,25 +239,24 @@
 
     function App() {
       const [user, setUser] = useState(null);
-      const [activeTab, setActiveTab] = useState('clients');
+      const [activeTab, setActiveTab] = useState('home');
       
       const [clients, setClients] = useState([]);
-      const [tasks, setTasks] = useState([]); 
       const [contentRecords, setContentRecords] = useState([]);
-      
-      const [marcaPersonalIdeas, setMarcaPersonalIdeas] = useState("");
-      const [generalNotes, setGeneralNotes] = useState("");
+      const [invoices, setInvoices] = useState([]);
+      const [fixedIncomes, setFixedIncomes] = useState({}); // { "2026-09": 1000000 }
       
       const [loading, setLoading] = useState(true);
+      const currentMonth = new Date().toISOString().substring(0, 7); // YYYY-MM
 
       useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
           if (user) {
             setUser(user);
             loadClients(user.uid);
-            loadTasks(user.uid);
             loadContentRecords(user.uid);
-            loadSettings(user.uid);
+            loadInvoices(user.uid);
+            loadFixedIncomes(user.uid);
           } else {
             setUser(null);
             setLoading(false);
@@ -269,174 +267,146 @@
 
       const loginWithGoogle = async () => {
         const provider = new firebase.auth.GoogleAuthProvider();
-        try { await auth.signInWithPopup(provider); } 
-        catch (error) { console.error("Login Error:", error); alert("Authentication error. Check console."); }
+        try { await auth.signInWithPopup(provider); } catch (e) { console.error(e); }
       };
-
-      const logout = () => { auth.signOut(); setTasks([]); setContentRecords([]); setClients([]); };
+      const logout = () => { auth.signOut(); };
 
       // ==========================================
-      // DATA LOADING FUNCTIONS (READ)
+      // DATA LOADING
       // ==========================================
       const loadClients = (uid) => {
         db.collection('users').doc(uid).collection('clients').where('archived', '==', false).onSnapshot(snap => {
             setClients(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         });
       };
-
-      const loadTasks = (uid) => {
-        db.collection('users').doc(uid).collection('tasks').onSnapshot(snap => {
-          let loadedTasks = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          loadedTasks.sort((a, b) => {
-            const orderA = a.order !== undefined ? a.order : Number.MAX_SAFE_INTEGER;
-            const orderB = b.order !== undefined ? b.order : Number.MAX_SAFE_INTEGER;
-            if (orderA !== orderB) return orderA - orderB;
-            return (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0);
-          });
-          setTasks(loadedTasks);
-          setLoading(false);
-        });
-      };
-
       const loadContentRecords = (uid) => {
         db.collection('users').doc(uid).collection('content_records').orderBy('createdAt', 'asc').onSnapshot(snap => {
           setContentRecords(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+          setLoading(false);
         });
       };
-
-      const loadSettings = (uid) => {
-        db.collection('users').doc(uid).collection('settings').doc('marcaPersonal').onSnapshot(doc => {
-            if(doc.exists) setMarcaPersonalIdeas(doc.data().ideas || "");
+      const loadInvoices = (uid) => {
+        db.collection('users').doc(uid).collection('invoices').onSnapshot(snap => {
+          setInvoices(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         });
-        db.collection('users').doc(uid).collection('settings').doc('generalNotes').onSnapshot(doc => {
-            if(doc.exists) setGeneralNotes(doc.data().text || "");
+      };
+      const loadFixedIncomes = (uid) => {
+        db.collection('users').doc(uid).collection('settings').doc('finance').onSnapshot(doc => {
+            if(doc.exists) setFixedIncomes(doc.data().fixedIncomes || {});
         });
       };
 
       // ==========================================
-      // CRUD FUNCTIONS
+      // CRUD CLIENTS
       // ==========================================
-      const addClient = async (name, url, type) => {
-        if (!user || !name) return;
+      const addClient = async (data) => {
+        if (!user) return;
         await db.collection('users').doc(user.uid).collection('clients').add({
-          name, url, type, archived: false, brands: type === 'Agencia' ? [] : null,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          ...data, archived: false, createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
       };
-
       const softDeleteClient = async (id) => {
-        if (!user || !window.confirm("Are you sure you want to hide this client? Tasks and records will not be deleted.")) return;
+        if (!user || !window.confirm("¿Ocultar este cliente?")) return;
         await db.collection('users').doc(user.uid).collection('clients').doc(id).update({ archived: true });
       };
 
-      const updateMarcaPersonalIdeas = async (val) => {
-        if (!user) return;
-        await db.collection('users').doc(user.uid).collection('settings').doc('marcaPersonal').set({ ideas: val }, { merge: true });
-      };
-
-      const updateGeneralNotes = async (val) => {
-        if (!user) return;
-        await db.collection('users').doc(user.uid).collection('settings').doc('generalNotes').set({ text: val }, { merge: true });
-      };
-
-      const addAgencyBrand = async (clientId, brandName) => {
-        if (!user || !brandName) return;
-        const clientRef = db.collection('users').doc(user.uid).collection('clients').doc(clientId);
-        await clientRef.update({ brands: firebase.firestore.FieldValue.arrayUnion(brandName) });
-      };
-
-      const deleteAgencyBrand = async (clientId, brandName) => {
-        if (!user || !window.confirm(`Are you sure you want to delete the brand "${brandName}" and ALL its associated tasks?`)) return;
-        
-        // 1. Remove brand from array
-        const clientRef = db.collection('users').doc(user.uid).collection('clients').doc(clientId);
-        await clientRef.update({ brands: firebase.firestore.FieldValue.arrayRemove(brandName) });
-        
-        // 2. Delete tasks for that brand
-        try {
-            const snapshot = await db.collection('users').doc(user.uid).collection('tasks')
-              .where('category', '==', clientId).where('brand', '==', brandName).get();
-            const batch = db.batch();
-            snapshot.docs.forEach(doc => batch.delete(doc.ref));
-            await batch.commit();
-        } catch(e) { console.error(e); }
-      };
-
-      // Task CRUD
-      const addTask = async (text, category, brand = null) => {
-        if (!text.trim() || !user) return;
-        const list = tasks.filter(t => t.category === category && t.brand === brand);
-        const maxOrder = list.length > 0 ? Math.max(...list.map(t => t.order || 0)) : -1;
-        const newTask = { text, category, brand, done: false, order: maxOrder + 1, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
-        await db.collection('users').doc(user.uid).collection('tasks').add(newTask);
-      };
-      
-      const toggleTask = async (task) => {
-        if (!user) return;
-        await db.collection('users').doc(user.uid).collection('tasks').doc(task.id).update({ done: !task.done });
-      };
-      
-      const deleteTask = async (id) => {
-        if (!user) return;
-        await db.collection('users').doc(user.uid).collection('tasks').doc(id).delete();
-      };
-      
-      const updateTaskOrder = async (reorderedTasks) => {
-        if (!user) return;
-        const batch = db.batch();
-        reorderedTasks.forEach((task, index) => {
-          const ref = db.collection('users').doc(user.uid).collection('tasks').doc(task.id);
-          batch.update(ref, { order: index });
-        });
-        try { await batch.commit(); } catch(e) { console.error("Error reordering", e); }
-      };
-
-      const clearAllTasks = async () => {
-        if (!user) return;
-        if (window.confirm("Are you sure you want to permanently delete ALL listed tasks? (Content ideas and records will not be affected)")) {
-          try {
-            const snapshot = await db.collection('users').doc(user.uid).collection('tasks').get();
-            const batch = db.batch();
-            snapshot.docs.forEach(doc => batch.delete(doc.ref));
-            await batch.commit();
-          } catch (error) { console.error("Error", error); }
-        }
-      };
-
-      // Content CRUD
-      const addContent = async (projectKey, isAgency) => {
+      // ==========================================
+      // CRUD CONTENT & AUTOMATED FINANCE LOGIC
+      // ==========================================
+      const addContent = async (projectKey, isAgency, extraData = {}) => {
         if (!user) return;
         await db.collection('users').doc(user.uid).collection('content_records').add({
-          project: projectKey, videoName: '', status: 'Sin empezar', notes: '', brand: isAgency ? '' : null, dateReceived: '', dateDelivered: '',
+          project: projectKey, videoName: extraData.videoName || '', status: extraData.status || 'Sin empezar', notes: '', brand: isAgency ? (extraData.brand || '') : null, 
+          dateReceived: extraData.dateReceived || '', dateDelivered: '', deadline: extraData.deadline || '', price: 0,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
       };
+
       const updateContent = async (id, field, value) => {
         if (!user) return;
+        const record = contentRecords.find(r => r.id === id);
+        if (!record) return;
+
         await db.collection('users').doc(user.uid).collection('content_records').doc(id).update({ [field]: value });
+
+        // FINANCE AUTOMATION LOGIC
+        if (field === 'status') {
+            const client = clients.find(c => c.id === record.project);
+            if (client && client.paymentModality === 'Por video' && client.requiresInvoice) {
+                const month = new Date().toISOString().substring(0, 7);
+                const appliedPrice = Number(record.price) || Number(client.baseRate) || 0;
+                
+                if (value === 'Entregado') {
+                    await autoAddInvoiceItem(client.id, month, { recordId: id, videoName: record.videoName || 'Video sin nombre', price: appliedPrice });
+                } else if (record.status === 'Entregado') {
+                    // Si antes estaba entregado y ahora no, restarlo de la cuenta de cobro borrador
+                    await autoRemoveInvoiceItem(client.id, month, id);
+                }
+            }
+        }
       };
+
+      const autoAddInvoiceItem = async (clientId, month, item) => {
+          const draft = invoices.find(i => i.clientId === clientId && i.month === month && i.status === 'Borrador');
+          if (draft) {
+              const exists = draft.items.find(i => i.recordId === item.recordId);
+              if (!exists) {
+                  const newItems = [...draft.items, item];
+                  const newTotal = newItems.reduce((acc, curr) => acc + curr.price, 0);
+                  await db.collection('users').doc(user.uid).collection('invoices').doc(draft.id).update({ items: newItems, total: newTotal });
+              }
+          } else {
+              // Create new draft
+              const invoiceCount = invoices.length + 1; // Basic sequential, can be optimized
+              await db.collection('users').doc(user.uid).collection('invoices').add({
+                  clientId, month, status: 'Borrador', number: invoiceCount.toString().padStart(3, '0'),
+                  items: [item], total: item.price, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+              });
+          }
+      };
+
+      const autoRemoveInvoiceItem = async (clientId, month, recordId) => {
+          const draft = invoices.find(i => i.clientId === clientId && i.month === month && i.status === 'Borrador');
+          if (draft) {
+              const newItems = draft.items.filter(i => i.recordId !== recordId);
+              const newTotal = newItems.reduce((acc, curr) => acc + curr.price, 0);
+              await db.collection('users').doc(user.uid).collection('invoices').doc(draft.id).update({ items: newItems, total: newTotal });
+          }
+      };
+
       const deleteContent = async (id) => {
-        if (!user || !window.confirm("Do you want to delete this record from the table?")) return;
+        if (!user || !window.confirm("¿Eliminar registro?")) return;
         await db.collection('users').doc(user.uid).collection('content_records').doc(id).delete();
       };
 
+      // ==========================================
+      // INVOICE MANUAL ACTIONS
+      // ==========================================
+      const updateInvoiceStatus = async (id, status) => {
+          if(!user) return;
+          await db.collection('users').doc(user.uid).collection('invoices').doc(id).update({ status });
+      };
+      const updateFixedIncome = async (month, value) => {
+          if(!user) return;
+          const updated = { ...fixedIncomes, [month]: Number(value) };
+          await db.collection('users').doc(user.uid).collection('settings').doc('finance').set({ fixedIncomes: updated }, { merge: true });
+      };
 
-      if (loading) return <div style={{display:'flex', height:'100vh', alignItems:'center', justifyContent:'center'}}>Loading Dashboard...</div>;
+      if (loading) return <div style={{display:'flex', height:'100vh', alignItems:'center', justifyContent:'center'}}>Cargando...</div>;
       
       if (!user) {
         return (
           <div style={{display:'flex', height:'100vh', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:'20px'}}>
-            <h1 className="font-title" style={{fontSize:'32px', margin:0}}>Planner Pro</h1>
-            <p style={{color:'var(--text-muted)'}}>Secure authentication linked to your account.</p>
-            <button onClick={loginWithGoogle} style={{ background:'var(--accent)', color:'#FFF', border:'none', padding:'14px 24px', borderRadius:'12px', fontSize:'16px', fontWeight:'600', cursor:'pointer', boxShadow:'0 10px 20px var(--accent-glow)' }}>Sign in with Google</button>
+            <h1 className="font-title" style={{fontSize:'32px', margin:0}}>Dashboard ERP</h1>
+            <p style={{color:'var(--text-muted)'}}>Autenticación segura vinculada a tu cuenta.</p>
+            <button onClick={loginWithGoogle} style={{ background:'var(--accent)', color:'#FFF', border:'none', padding:'14px 24px', borderRadius:'12px', fontSize:'16px', fontWeight:'600', cursor:'pointer' }}>Ingresar con Google</button>
           </div>
         );
       }
 
       return (
         <div className="app-layout">
-          
-          {/* COLLAPSIBLE SIDEBAR */}
+          {/* SIDEBAR */}
           <div className="sidebar-wrapper">
             <div className="sidebar">
               <div className="sidebar-content">
@@ -444,26 +414,34 @@
                   <img src={user.photoURL} alt="User" style={{ width: "40px", height: "40px", borderRadius: "12px", flexShrink: 0 }} />
                   <div className="user-details">
                     <div className="font-title" style={{ fontSize: "16px", fontWeight: 700 }}>{user.displayName.split(' ')[0]}</div>
-                    <div style={{ color: "var(--text-muted)", fontSize: "12px" }}>Post-Production</div>
+                    <div style={{ color: "var(--text-muted)", fontSize: "12px" }}>Dashboard</div>
                   </div>
                 </div>
 
                 <div className="sidebar-nav">
-                  <div className="menu-text" style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1px", paddingLeft: "16px", marginBottom: "4px" }}>Workspaces</div>
+                  <div className="menu-text" style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1px", paddingLeft: "16px", marginBottom: "4px" }}>General</div>
+                  <button className={`menu-btn ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
+                    <svg className="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    <span className="menu-text">Home</span>
+                  </button>
                   <button className={`menu-btn ${activeTab === 'clients' ? 'active' : ''}`} onClick={() => setActiveTab('clients')}>
-                    <svg className="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                    <span className="menu-text">Clients & Projects</span>
+                    <svg className="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <span className="menu-text">Clients</span>
                   </button>
                   <button className={`menu-btn ${activeTab === 'content' ? 'active' : ''}`} onClick={() => setActiveTab('content')}>
-                    <svg className="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
+                    <svg className="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line></svg>
                     <span className="menu-text">Content Records</span>
+                  </button>
+                  <button className={`menu-btn ${activeTab === 'finance' ? 'active' : ''}`} onClick={() => setActiveTab('finance')}>
+                    <svg className="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    <span className="menu-text">Finance</span>
                   </button>
                 </div>
 
                 <div className="sidebar-footer">
                   <button onClick={logout} className="menu-btn" style={{ color: "#FF6B6B" }}>
-                    <svg className="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{stroke: "#FF6B6B", opacity: 1}}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                    <span className="menu-text" style={{fontWeight: 600}}>Log Out</span>
+                    <svg className="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{stroke: "#FF6B6B", opacity: 1}}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    <span className="menu-text">Log Out</span>
                   </button>
                 </div>
               </div>
@@ -472,31 +450,176 @@
 
           {/* MAIN AREA */}
           <div className="main-area">
-            {activeTab === 'clients' && (
-              <ClientsView 
-                clients={clients} addClient={addClient} softDeleteClient={softDeleteClient} 
-                addAgencyBrand={addAgencyBrand} deleteAgencyBrand={deleteAgencyBrand}
-                tasks={tasks} addTask={addTask} toggleTask={toggleTask} deleteTask={deleteTask} updateTaskOrder={updateTaskOrder} clearAllTasks={clearAllTasks}
-                marcaPersonalIdeas={marcaPersonalIdeas} updateMarcaPersonalIdeas={updateMarcaPersonalIdeas}
-                generalNotes={generalNotes} updateGeneralNotes={updateGeneralNotes}
-              />
-            )}
-            {activeTab === 'content' && (
-              <ContentView 
-                clients={clients} softDeleteClient={softDeleteClient}
-                contentRecords={contentRecords} addContent={addContent} updateContent={updateContent} deleteContent={deleteContent} 
-              />
-            )}
+            {activeTab === 'home' && <HomeView clients={clients} contentRecords={contentRecords} invoices={invoices} fixedIncomes={fixedIncomes} currentMonth={currentMonth} addContent={addContent} />}
+            {activeTab === 'clients' && <ClientsView clients={clients} addClient={addClient} softDeleteClient={softDeleteClient} />}
+            {activeTab === 'content' && <ContentView clients={clients} contentRecords={contentRecords} addContent={addContent} updateContent={updateContent} deleteContent={deleteContent} />}
+            {activeTab === 'finance' && <FinanceView clients={clients} invoices={invoices} fixedIncomes={fixedIncomes} updateFixedIncome={updateFixedIncome} currentMonth={currentMonth} updateInvoiceStatus={updateInvoiceStatus} />}
           </div>
         </div>
       );
     }
 
     // ==========================================
-    // VIEW: CONTENT RECORDS (TABLES & ACCORDION)
+    // VIEW: HOME
     // ==========================================
-    
-    // Status Options mapped for UI (English label, Spanish DB value)
+    function HomeView({ clients, contentRecords, invoices, fixedIncomes, currentMonth, addContent }) {
+        const pendingVideos = contentRecords.filter(r => r.status === 'Sin empezar' || r.status === 'En progreso').length;
+        
+        // Revenue logic
+        const currentFixed = fixedIncomes[currentMonth] || 0;
+        const currentPaidInvoices = invoices.filter(i => i.month === currentMonth && i.status === 'Pagada').reduce((acc, curr) => acc + curr.total, 0);
+        const totalCurrent = currentFixed + currentPaidInvoices;
+
+        const prevDate = new Date(); prevDate.setMonth(prevDate.getMonth() - 1);
+        const prevMonth = prevDate.toISOString().substring(0, 7);
+        const prevFixed = fixedIncomes[prevMonth] || 0;
+        const prevPaidInvoices = invoices.filter(i => i.month === prevMonth && i.status === 'Pagada').reduce((acc, curr) => acc + curr.total, 0);
+        const totalPrev = prevFixed + prevPaidInvoices;
+
+        const diff = totalPrev === 0 ? 100 : ((totalCurrent - totalPrev) / totalPrev) * 100;
+
+        // Quick Add Form State
+        const [qClient, setQClient] = useState('');
+        const [qVideo, setQVideo] = useState('');
+        const [qBrand, setQBrand] = useState('');
+        const [qDateRec, setQDateRec] = useState('');
+        const [qDeadline, setQDeadline] = useState('');
+        
+        const handleQuickAdd = () => {
+            if(!qClient || !qVideo) return alert("Cliente y Video requeridos");
+            const c = clients.find(cl => cl.id === qClient);
+            addContent(qClient, c?.type === 'Agencia', { videoName: qVideo, brand: qBrand, dateReceived: qDateRec, deadline: qDeadline, status: 'Sin empezar' });
+            setQVideo(''); setQBrand(''); setQDateRec(''); setQDeadline(''); alert("Añadido al registro");
+        };
+
+        return (
+            <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+                <h1 className="font-title" style={{ fontSize: "32px", margin: "0 0 32px 0" }}>Resumen Global</h1>
+                
+                <div className="kpi-grid">
+                    <div className="card" style={{ marginBottom: 0, padding: "24px" }}>
+                        <div style={{ color: "var(--text-muted)", fontSize: "14px", marginBottom: "8px" }}>Videos Pendientes</div>
+                        <div className="font-title" style={{ fontSize: "36px", color: "#00d2d3" }}>{pendingVideos}</div>
+                        <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "8px" }}>En estado To do o In progress</div>
+                    </div>
+                    <div className="card" style={{ marginBottom: 0, padding: "24px" }}>
+                        <div style={{ color: "var(--text-muted)", fontSize: "14px", marginBottom: "8px" }}>Ingresos del Mes (Pagado)</div>
+                        <div className="font-title" style={{ fontSize: "32px", color: "#2ed573" }}>{formatCOP(totalCurrent)}</div>
+                        <div style={{ fontSize: "12px", color: diff >= 0 ? "#2ed573" : "#ff4757", marginTop: "8px", fontWeight: 600 }}>
+                            {diff > 0 ? '↑' : '↓'} {Math.abs(diff).toFixed(1)}% vs mes anterior
+                        </div>
+                    </div>
+                </div>
+
+                <div className="card">
+                    <h2 className="font-title" style={{ margin: "0 0 20px 0", fontSize: "20px" }}>Añadir Pendiente Rápido</h2>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
+                        <select className="modal-input" style={{marginBottom: 0}} value={qClient} onChange={e => setQClient(e.target.value)}>
+                            <option value="">Seleccionar Cliente...</option>
+                            {clients.map(c => <option key={c.id} value={c.id}>{c.name} {c.type === 'Agencia' ? '(Agencia)' : ''}</option>)}
+                        </select>
+                        <input type="text" className="modal-input" style={{marginBottom: 0}} placeholder="Nombre del video" value={qVideo} onChange={e => setQVideo(e.target.value)} />
+                        {clients.find(c => c.id === qClient)?.type === 'Agencia' && (
+                            <input type="text" className="modal-input" style={{marginBottom: 0}} placeholder="Marca" value={qBrand} onChange={e => setQBrand(e.target.value)} />
+                        )}
+                        <input type="date" className="modal-input" style={{marginBottom: 0}} title="Fecha Recepción" value={qDateRec} onChange={e => setQDateRec(e.target.value)} />
+                        <input type="date" className="modal-input" style={{marginBottom: 0}} title="Fecha Límite" value={qDeadline} onChange={e => setQDeadline(e.target.value)} />
+                        <button className="fab-btn" style={{ height: "46px", justifyContent: "center" }} onClick={handleQuickAdd}>+ Registrar</button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // ==========================================
+    // VIEW: CLIENTS
+    // ==========================================
+    function ClientsView({ clients, addClient, softDeleteClient }) {
+        const [isModalOpen, setIsModalOpen] = useState(false);
+        const [cName, setCName] = useState(""); const [cUrl, setCUrl] = useState("");
+        const [cType, setCType] = useState("Estándar"); const [cModality, setCModality] = useState("Por video");
+        const [cRate, setCRate] = useState(""); const [cReqInv, setCReqInv] = useState(true);
+
+        const handleSave = () => {
+            if(!cName) return;
+            addClient({ name: cName, url: cUrl, type: cType, paymentModality: cModality, baseRate: Number(cRate)||0, requiresInvoice: cReqInv, brands: cType==='Agencia'?[]:null });
+            setCName(""); setCUrl(""); setIsModalOpen(false); setCRate("");
+        };
+
+        return (
+            <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
+                    <h1 className="font-title" style={{ fontSize: "32px", margin: 0 }}>Gestión de Clientes</h1>
+                    <button onClick={() => setIsModalOpen(true)} className="fab-btn">+ Nuevo Cliente</button>
+                </div>
+
+                <div className="grid-cards">
+                    {clients.map(c => (
+                        <div key={c.id} className="card" style={{ position: "relative" }}>
+                            <button onClick={() => softDeleteClient(c.id)} style={{ position: "absolute", top: "16px", right: "16px", background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "18px" }}>×</button>
+                            <span className={`glow-tag ${c.type === 'Agencia' ? 'glow-orange' : 'glow-cyan'}`}>{c.type}</span>
+                            <h2 className="font-title" style={{ margin: "12px 0 8px 0", fontSize: "20px" }}>{c.name}</h2>
+                            {c.url && <a href={c.url} target="_blank" style={{ color: "var(--accent)", textDecoration: "none", fontSize: "13px", display: "block", marginBottom: "16px" }}>Enlace ↗</a>}
+                            
+                            <div style={{ background: "var(--bg-main)", padding: "12px", borderRadius: "10px", fontSize: "13px", color: "var(--text-muted)" }}>
+                                <div><strong style={{color:"var(--text-main)"}}>Cobro:</strong> {c.paymentModality}</div>
+                                {c.paymentModality === 'Por video' && <div><strong style={{color:"var(--text-main)"}}>Tarifa Base:</strong> {formatCOP(c.baseRate)}</div>}
+                                <div><strong style={{color:"var(--text-main)"}}>Cuenta Cobro:</strong> {c.requiresInvoice ? 'Sí (Auto)' : 'No'}</div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* MODAL CREAR CLIENTE */}
+                <div className={`modal-overlay ${isModalOpen ? 'open' : ''}`} onClick={() => setIsModalOpen(false)}>
+                    <div className="modal-card" onClick={e => e.stopPropagation()}>
+                        <h2 className="font-title" style={{ margin: "0 0 24px 0", fontSize: "22px" }}>Crear Cliente</h2>
+                        
+                        <label style={{display:"block", marginBottom: "4px", fontSize:"13px", color:"var(--text-muted)"}}>Nombre *</label>
+                        <input type="text" className="modal-input" value={cName} onChange={e => setCName(e.target.value)} />
+                        
+                        <label style={{display:"block", marginBottom: "4px", fontSize:"13px", color:"var(--text-muted)"}}>Enlace (Web/Carpeta) Opcional</label>
+                        <input type="text" className="modal-input" value={cUrl} onChange={e => setCUrl(e.target.value)} />
+                        
+                        <label style={{display:"block", marginBottom: "4px", fontSize:"13px", color:"var(--text-muted)"}}>Tipo de Flujo</label>
+                        <select className="modal-input" value={cType} onChange={e => setCType(e.target.value)}>
+                            <option value="Estándar">Estándar (Directo)</option>
+                            <option value="Agencia">Agencia (Multimarca)</option>
+                            <option value="Fijo">Proyecto Fijo</option>
+                        </select>
+
+                        <label style={{display:"block", marginBottom: "4px", fontSize:"13px", color:"var(--text-muted)"}}>Modalidad de Pago</label>
+                        <select className="modal-input" value={cModality} onChange={e => setCModality(e.target.value)}>
+                            <option value="Por video">Por video (Variable)</option>
+                            <option value="Salario fijo">Salario fijo mensual</option>
+                            <option value="Proyecto">Pago único por proyecto</option>
+                        </select>
+
+                        {cModality === 'Por video' && (
+                            <>
+                                <label style={{display:"block", marginBottom: "4px", fontSize:"13px", color:"var(--text-muted)"}}>Tarifa Base por Video (COP)</label>
+                                <input type="number" className="modal-input" value={cRate} onChange={e => setCRate(e.target.value)} placeholder="Ej: 40000" />
+                            </>
+                        )}
+
+                        <div style={{display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px"}}>
+                            <input type="checkbox" checked={cReqInv} onChange={e => setCReqInv(e.target.checked)} id="reqInv" style={{width:"18px", height:"18px"}} />
+                            <label htmlFor="reqInv" style={{fontSize:"14px"}}>Generar Cuentas de Cobro Automáticas</label>
+                        </div>
+
+                        <div style={{display: "flex", gap: "12px"}}>
+                            <button onClick={() => setIsModalOpen(false)} style={{flex: 1, padding: "12px", background: "transparent", border: "1px solid var(--border-color)", color: "var(--text-main)", borderRadius: "10px", cursor: "pointer"}}>Cancelar</button>
+                            <button onClick={handleSave} style={{flex: 1, padding: "12px", background: "var(--accent)", border: "none", color: "#FFF", borderRadius: "10px", cursor: "pointer", fontWeight: "600"}}>Guardar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // ==========================================
+    // VIEW: CONTENT RECORDS
+    // ==========================================
     const STATUS_OPTIONS = [
       { value: 'Sin empezar', label: 'To Do', class: 'status-todo' },
       { value: 'En progreso', label: 'In Progress', class: 'status-progress' },
@@ -505,92 +628,29 @@
       { value: 'Entregado', label: 'Delivered', class: 'status-delivered' }
     ];
 
-    const ClientTableAccordion = ({ 
-      title, projectId, isAgency, hideable, 
-      contentRecords, addContent, updateContent, deleteContent, softDeleteClient 
-    }) => {
-      // Set to false by default as requested
+    const ClientTableAccordion = ({ client, contentRecords, addContent, updateContent, deleteContent }) => {
       const [isExpanded, setIsExpanded] = useState(false);
+      let records = contentRecords.filter(r => r.project === client.id);
       
-      const [search, setSearch] = useState('');
-      const [sort, setSort] = useState('none');
-      const [filterBrand, setFilterBrand] = useState('All');
-      const [filterMonth, setFilterMonth] = useState('All');
-      const [filterStatus, setFilterStatus] = useState('All');
-
-      let records = contentRecords.filter(r => r.project === projectId);
-      
+      const isAgency = client.type === 'Agencia';
       const uniqueBrands = isAgency ? [...new Set(records.map(r => r.brand).filter(Boolean))] : [];
-      const uniqueMonths = [...new Set(records.map(r => r.dateReceived ? r.dateReceived.substring(0,7) : null).filter(Boolean))].sort();
-      const datalistId = `brands-${projectId}`;
-
-      // Apply Filters
-      if (search) records = records.filter(r => (r.videoName || '').toLowerCase().includes(search.toLowerCase()));
-      if (filterBrand !== 'All') records = records.filter(r => r.brand === filterBrand);
-      if (filterStatus !== 'All') records = records.filter(r => r.status === filterStatus);
-      if (filterMonth !== 'All') {
-          records = records.filter(r => {
-              if (!r.dateReceived) return false;
-              return r.dateReceived.substring(0, 7) === filterMonth;
-          });
-      }
-
-      // Apply Sort
-      if (sort === 'date') records.sort((a,b) => (a.dateReceived || '').localeCompare(b.dateReceived || ''));
-      if (sort === 'status') records.sort((a,b) => (a.status || '').localeCompare(b.status || ''));
+      const datalistId = `brands-${client.id}`;
 
       return (
-        <div className="client-card">
+        <div className="card" style={{ padding: "24px" }}>
           <div className="accordion-header" onClick={() => setIsExpanded(!isExpanded)} style={{ marginBottom: isExpanded ? "16px" : "0", paddingBottom: isExpanded ? "16px" : "0", borderBottom: isExpanded ? "1px dashed var(--border-color)" : "none" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <span className={`glow-tag ${isAgency ? 'glow-orange' : (projectId==='personal' ? 'glow-purple' : 'glow-cyan')}`}>
-                {projectId === 'personal' ? 'Fixed' : (isAgency ? 'Agency' : 'Standard')}
-              </span>
-              <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>{title}</h2>
+              <span className={`glow-tag ${isAgency ? 'glow-orange' : 'glow-cyan'}`}>{client.type}</span>
+              <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>{client.name}</h2>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              {hideable && <button onClick={(e) => { e.stopPropagation(); softDeleteClient(projectId); }} style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "16px" }} title="Hide Client">×</button>}
-              <svg className={`chevron ${isExpanded ? 'open' : ''}`} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-            </div>
+            <svg className={`chevron ${isExpanded ? 'open' : ''}`} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </div>
 
           <div style={{ display: isExpanded ? 'block' : 'none' }}>
-            <div className="toolbar">
-              <input type="text" placeholder="Search video..." value={search} onChange={e => setSearch(e.target.value)} className="toolbar-input" />
-              
-              {isAgency && (
-                <select value={filterBrand} onChange={e => setFilterBrand(e.target.value)} className="toolbar-select">
-                  <option value="All">All Brands</option>
-                  {uniqueBrands.map(b => <option key={b} value={b}>{b}</option>)}
-                </select>
-              )}
-
-              <select value={filterMonth} onChange={e => setFilterMonth(e.target.value)} className="toolbar-select">
-                <option value="All">All Months</option>
-                {uniqueMonths.map(m => <option key={m} value={m}>{m}</option>)}
-              </select>
-
-              <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="toolbar-select">
-                <option value="All">All Statuses</option>
-                {STATUS_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-              </select>
-
-              <select value={sort} onChange={e => setSort(e.target.value)} className="toolbar-select">
-                <option value="none">Sort by...</option>
-                <option value="date">Date Received</option>
-                <option value="status">Status</option>
-              </select>
-              
-              <button onClick={() => addContent(projectId, isAgency)} style={{ background: "var(--accent)", color: "#fff", border: "none", padding: "8px 16px", borderRadius: "10px", fontSize: "13px", fontWeight: "600", cursor: "pointer", marginLeft: "auto" }}>
-                + Add
-              </button>
+            <div className="toolbar" style={{justifyContent: "flex-end"}}>
+              <button onClick={() => addContent(client.id, isAgency)} className="fab-btn" style={{ padding: "8px 16px", fontSize: "13px", boxShadow: "none" }}>+ Añadir Fila</button>
             </div>
-
-            {isAgency && (
-              <datalist id={datalistId}>
-                {uniqueBrands.map(b => <option key={b} value={b} />)}
-              </datalist>
-            )}
+            {isAgency && <datalist id={datalistId}>{uniqueBrands.map(b => <option key={b} value={b} />)}</datalist>}
             
             <div className="table-responsive">
               <table className="content-table">
@@ -598,36 +658,36 @@
                   <tr>
                     <th>Video Name</th>
                     {isAgency && <th>Brand</th>}
-                    <th>Received</th>
-                    <th>Delivered</th>
-                    <th>Status</th>
-                    <th>Notes</th>
-                    <th style={{textAlign: "center"}}>Action</th>
+                    <th>Recepción</th>
+                    <th>Deadline</th>
+                    <th>Estado</th>
+                    <th>Tarifa (Si aplica)</th>
+                    <th>Notas</th>
+                    <th style={{textAlign: "center"}}>X</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {records.length === 0 && (
-                    <tr>
-                      <td colSpan={isAgency ? 7 : 6} style={{ textAlign: "center", color: "var(--text-muted)", fontStyle: "italic", padding: "24px" }}>
-                        No records to display.
-                      </td>
-                    </tr>
-                  )}
-                  {records.map(record => (
-                    <tr key={record.id}>
-                      <td><EditableInput value={record.videoName} onSave={(val) => updateContent(record.id, 'videoName', val)} placeholder="Video title..." /></td>
-                      {isAgency && <td><EditableInput value={record.brand} onSave={(val) => updateContent(record.id, 'brand', val)} placeholder="Select brand..." list={datalistId} /></td>}
-                      <td><input type="date" value={record.dateReceived || ''} onChange={(e) => updateContent(record.id, 'dateReceived', e.target.value)} /></td>
-                      <td><input type="date" value={record.dateDelivered || ''} onChange={(e) => updateContent(record.id, 'dateDelivered', e.target.value)} /></td>
+                  {records.map(r => (
+                    <tr key={r.id}>
+                      <td><EditableInput value={r.videoName} onSave={(val) => updateContent(r.id, 'videoName', val)} placeholder="Título..." /></td>
+                      {isAgency && <td><EditableInput value={r.brand} onSave={(val) => updateContent(r.id, 'brand', val)} placeholder="Marca..." list={datalistId} /></td>}
+                      <td><input type="date" value={r.dateReceived || ''} onChange={(e) => updateContent(r.id, 'dateReceived', e.target.value)} /></td>
+                      <td><input type="date" value={r.deadline || ''} onChange={(e) => updateContent(r.id, 'deadline', e.target.value)} /></td>
                       <td>
-                        <select value={record.status} onChange={(e) => updateContent(record.id, 'status', e.target.value)} className={STATUS_OPTIONS.find(o => o.value === record.status)?.class || 'status-todo'}>
+                        <select value={r.status} onChange={(e) => updateContent(r.id, 'status', e.target.value)} className={STATUS_OPTIONS.find(o => o.value === r.status)?.class || 'status-todo'}>
                           {STATUS_OPTIONS.map(opt => <option key={opt.value} value={opt.value} style={{background: 'var(--bg-card)', color: 'var(--text-main)'}}>{opt.label}</option>)}
                         </select>
                       </td>
-                      <td><EditableInput value={record.notes} onSave={(val) => updateContent(record.id, 'notes', val)} placeholder="Notes..." /></td>
-                      <td style={{ textAlign: "center" }}><button onClick={() => deleteContent(record.id)} style={{ background: "transparent", border: "none", color: "#ff4757", cursor: "pointer", fontSize: "20px" }} title="Delete">×</button></td>
+                      <td>
+                        {client.paymentModality === 'Por video' ? (
+                            <EditableInput type="number" value={r.price || client.baseRate} onSave={(val) => updateContent(r.id, 'price', Number(val))} style={{width:"80px"}} />
+                        ) : <span style={{color:"var(--text-muted)", fontSize:"12px"}}>-</span>}
+                      </td>
+                      <td><EditableInput value={r.notes} onSave={(val) => updateContent(r.id, 'notes', val)} placeholder="Notas..." /></td>
+                      <td style={{ textAlign: "center" }}><button onClick={() => deleteContent(r.id)} style={{ background: "transparent", border: "none", color: "#ff4757", cursor: "pointer", fontSize: "18px" }}>×</button></td>
                     </tr>
                   ))}
+                  {records.length === 0 && <tr><td colSpan={8} style={{textAlign:"center", padding:"20px", color:"var(--text-muted)"}}>Sin registros.</td></tr>}
                 </tbody>
               </table>
             </div>
@@ -636,263 +696,173 @@
       );
     };
 
-    function ContentView({ clients, softDeleteClient, contentRecords, addContent, updateContent, deleteContent }) {
+    function ContentView({ clients, contentRecords, addContent, updateContent, deleteContent }) {
       return (
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-          <h1 className="font-title" style={{ fontSize: "32px", margin: "0 0 32px 0" }}>Content Records</h1>
-          
-          {clients.map(client => (
-            <ClientTableAccordion 
-              key={client.id} 
-              title={client.name} 
-              projectId={client.id} 
-              isAgency={client.type === 'Agencia'} 
-              hideable={true} 
-              contentRecords={contentRecords}
-              addContent={addContent}
-              updateContent={updateContent}
-              deleteContent={deleteContent}
-              softDeleteClient={softDeleteClient}
-            />
+          <h1 className="font-title" style={{ fontSize: "32px", margin: "0 0 32px 0" }}>Registro de Contenidos</h1>
+          {clients.map(c => (
+            <ClientTableAccordion key={c.id} client={c} contentRecords={contentRecords} addContent={addContent} updateContent={updateContent} deleteContent={deleteContent} />
           ))}
-
-          <ClientTableAccordion 
-            title="Personal Brand" 
-            projectId="personal" 
-            isAgency={false} 
-            hideable={false} 
-            contentRecords={contentRecords}
-            addContent={addContent}
-            updateContent={updateContent}
-            deleteContent={deleteContent}
-            softDeleteClient={softDeleteClient}
-          />
         </div>
       );
     }
 
     // ==========================================
-    // VIEW: CLIENTS & PROJECTS (DRAG & DROP + LAYOUT)
+    // VIEW: FINANCE (With PDF Export Logic)
     // ==========================================
-    function ClientsView({ clients, addClient, softDeleteClient, addAgencyBrand, deleteAgencyBrand, tasks, addTask, toggleTask, deleteTask, updateTaskOrder, clearAllTasks, marcaPersonalIdeas, updateMarcaPersonalIdeas, generalNotes, updateGeneralNotes }) {
-      
-      const [isModalOpen, setIsModalOpen] = useState(false);
-      const [newClientName, setNewClientName] = useState("");
-      const [newClientUrl, setNewClientUrl] = useState("");
-      const [newClientType, setNewClientType] = useState("Estándar");
+    function FinanceView({ clients, invoices, fixedIncomes, updateFixedIncome, currentMonth, updateInvoiceStatus }) {
+        const [filterMonth, setFilterMonth] = useState(currentMonth);
+        const [printInvoice, setPrintInvoice] = useState(null); // The invoice to print
 
-      const handleAddClient = () => {
-        if(newClientName.trim()){
-          addClient(newClientName, newClientUrl, newClientType);
-          setNewClientName(""); setNewClientUrl(""); setIsModalOpen(false);
-        }
-      };
+        const fixedValue = fixedIncomes[filterMonth] || 0;
+        const monthInvoices = invoices.filter(i => i.month === filterMonth);
+        
+        const pendingValue = monthInvoices.filter(i => i.status === 'Borrador' || i.status === 'Enviada').reduce((acc, curr) => acc + curr.total, 0);
+        const collectedValue = monthInvoices.filter(i => i.status === 'Pagada').reduce((acc, curr) => acc + curr.total, 0) + fixedValue;
+        const projectedValue = pendingValue + collectedValue;
 
-      const TaskInput = ({ onAdd, placeholder }) => {
-        const [val, setVal] = useState("");
-        return (
-          <input 
-            type="text" value={val} onChange={e => setVal(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter' && val) { onAdd(val); setVal(""); } }}
-            placeholder={placeholder}
-            style={{ width: "100%", background: "var(--bg-main)", border: "1px dashed var(--border-color)", padding: "12px 16px", borderRadius: "10px", color: "var(--text-main)", fontSize: "14px", marginTop: "12px" }}
-          />
-        );
-      };
-
-      const TaskList = ({ list }) => {
-        const [draggedId, setDraggedId] = useState(null);
-        const [dragOverId, setDragOverId] = useState(null);
-
-        const handleDragStart = (e, id) => { setDraggedId(id); e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", id); };
-        const handleDragOver = (e, id) => { e.preventDefault(); setDragOverId(id); };
-        const handleDrop = (e, targetId) => {
-          e.preventDefault(); setDragOverId(null);
-          if (!draggedId || draggedId === targetId) return;
-          const newList = [...list];
-          const sourceIndex = newList.findIndex(t => t.id === draggedId);
-          const targetIndex = newList.findIndex(t => t.id === targetId);
-          if (sourceIndex < 0 || targetIndex < 0) return;
-          const [movedItem] = newList.splice(sourceIndex, 1);
-          newList.splice(targetIndex, 0, movedItem);
-          newList.forEach((task, idx) => { task.order = idx; });
-          updateTaskOrder(newList);
-          setDraggedId(null);
-        };
+        const getClient = (id) => clients.find(c => c.id === id) || { name: 'Desconocido' };
+        
+        const handlePrint = () => { window.print(); };
 
         return (
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "16px" }}>
-            {list.length === 0 && <div style={{ color: "var(--text-muted)", fontSize: "13px", fontStyle: "italic" }}>No pending tasks.</div>}
-            {list.map(t => (
-              <div 
-                key={t.id} draggable onDragStart={(e) => handleDragStart(e, t.id)} onDragOver={(e) => handleDragOver(e, t.id)} onDrop={(e) => handleDrop(e, t.id)}
-                className={`task-item ${t.done ? 'done' : ''} ${dragOverId === t.id ? 'drag-over' : ''}`} 
-                style={{ display: "flex", alignItems: "flex-start", gap: "12px", background: "var(--bg-main)", padding: "12px 16px", borderRadius: "10px", border: "1px solid var(--border-color)", opacity: draggedId === t.id ? 0.4 : 1 }}
-              >
-                <input type="checkbox" className="checkbox-custom" checked={t.done} onChange={() => toggleTask(t)} style={{marginTop: "2px"}} />
-                <span style={{ flex: 1, fontSize: "14px", color: t.done ? "var(--text-muted)" : "var(--text-main)", lineHeight: "1.4" }}>{t.text}</span>
-                <button onClick={() => deleteTask(t.id)} style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "18px", padding: 0 }}>×</button>
-              </div>
-            ))}
-          </div>
-        );
-      };
-
-      return (
-        <div style={{ maxWidth: "1400px", margin: "0 auto", paddingBottom: "60px" }}>
-          
-          <div className="page-header-flex" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
-            <h1 className="font-title" style={{ fontSize: "32px", margin: 0 }}>Clients & Projects</h1>
-            <div style={{display: "flex", gap: "12px"}}>
-                <button onClick={() => setIsModalOpen(true)} className="fab-btn">
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                  New Client
-                </button>
-                <button 
-                onClick={clearAllTasks}
-                style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(255, 71, 87, 0.1)", color: "#ff4757", border: "1px solid rgba(255, 71, 87, 0.3)", padding: "8px 16px", borderRadius: "30px", fontSize: "13px", fontWeight: "600", cursor: "pointer", transition: "all 0.2s" }}
-                >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width: "16px", height: "16px"}}><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                Clear all
-                </button>
-            </div>
-          </div>
-
-          <div className="clients-layout">
-            {/* COLUMN 1: CLIENT LIST */}
-            <div className="clients-main">
-              {clients.map(client => {
-                if (client.type === 'Estándar') {
-                  return (
-                    <div key={client.id} className="client-card" style={{ position: "relative" }}>
-                      <button onClick={() => softDeleteClient(client.id)} style={{ position: "absolute", top: "20px", right: "20px", background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "18px" }}>×</button>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingRight: "30px", flexWrap: "wrap", gap: "10px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                          <span className="glow-tag glow-cyan">Client</span>
-                          <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>{client.name}</h2>
-                        </div>
-                        {client.url && <a href={client.url} target="_blank" style={{ color: "var(--accent)", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>Link ↗</a>}
-                      </div>
-                      <TaskList list={tasks.filter(t => t.category === client.id)} />
-                      <TaskInput onAdd={(text) => addTask(text, client.id)} placeholder={`+ New task for ${client.name}...`} />
-                    </div>
-                  );
-                } 
-                else if (client.type === 'Agencia') {
-                  const agencyBrands = client.brands || [];
-                  return (
-                    <div key={client.id} className="client-card" style={{ position: "relative" }}>
-                      <button onClick={() => softDeleteClient(client.id)} style={{ position: "absolute", top: "20px", right: "20px", background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "18px" }}>×</button>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingRight: "30px", marginBottom: "24px", flexWrap: "wrap", gap: "10px" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                            <span className="glow-tag glow-orange">Agency</span>
-                            <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>{client.name}</h2>
-                          </div>
-                          {client.url && <a href={client.url} target="_blank" style={{ color: "var(--accent)", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>Link ↗</a>}
-                      </div>
-                      
-                      <div className="clients-grid">
-                        {agencyBrands.map(brand => (
-                          <div key={brand} style={{ background: "var(--bg-main)", padding: "20px", borderRadius: "16px", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", position: "relative" }}>
-                            <button onClick={() => deleteAgencyBrand(client.id, brand)} style={{ position: "absolute", top: "16px", right: "16px", background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "16px", padding: "4px" }}>×</button>
-                            <h3 className="font-title" style={{ margin: "0 0 16px 0", fontSize: "16px", color: "var(--text-muted)", paddingRight: "20px" }}>{brand}</h3>
-                            <div style={{ flex: 1 }}>
-                              <TaskList list={tasks.filter(t => t.category === client.id && t.brand === brand)} />
+            <div style={{ maxWidth: "1100px", margin: "0 auto", paddingBottom: "60px" }}>
+                
+                {/* INVOICE PRINT OVERLAY */}
+                {printInvoice && (
+                    <div className="modal-overlay open no-print" style={{zIndex: 9999, background: "var(--bg-main)", padding: "40px", overflowY: "auto", alignItems: "flex-start"}}>
+                        <div style={{maxWidth: "800px", margin: "0 auto", width: "100%"}}>
+                            <div style={{display:"flex", justifyContent: "space-between", marginBottom: "20px"}}>
+                                <button onClick={() => setPrintInvoice(null)} style={{background: "var(--bg-card)", color: "#FFF", border: "1px solid var(--border-color)", padding: "10px 20px", borderRadius: "10px", cursor: "pointer"}}>Cerrar Vista</button>
+                                <button onClick={handlePrint} className="fab-btn">Imprimir / Guardar PDF</button>
                             </div>
-                            <TaskInput onAdd={(text) => addTask(text, client.id, brand)} placeholder={`+ Task for ${brand}`} />
-                          </div>
-                        ))}
-                        
-                        <div style={{ border: "2px dashed var(--border-color)", borderRadius: "16px", padding: "20px", display: "flex", alignItems: "center", justifyContent: "center", minHeight: "150px" }}>
-                          <input 
-                            type="text" placeholder="+ Add Brand" 
-                            onKeyDown={e => { if (e.key === 'Enter' && e.target.value) { addAgencyBrand(client.id, e.target.value); e.target.value=''; } }}
-                            style={{ background: "transparent", border: "none", textAlign: "center", color: "var(--text-main)", fontSize: "14px", width: "100%", outline: "none" }}
-                          />
+                            
+                            {/* THE ACTUAL PRINT CANVAS */}
+                            <div id="print-area" className="invoice-canvas">
+                                <div className="invoice-header">
+                                    <div style={{flex: 1}}>
+                                        <h2 className="invoice-title">Cuenta de Cobro</h2>
+                                    </div>
+                                    <div className="invoice-meta">
+                                        <div><strong>Fecha:</strong> {new Date().toLocaleDateString('es-CO', {day:'2-digit', month:'short', year:'numeric'})}</div>
+                                        <div><strong>Cuenta de Cobro:</strong> {printInvoice.number || '001'}</div>
+                                    </div>
+                                </div>
+
+                                <div className="invoice-details">
+                                    <div style={{flex: 1}}>
+                                        <h4>Cuenta de Cobro A:</h4>
+                                        <div style={{fontSize: "16px", fontWeight: "600", color: "#000"}}>{getClient(printInvoice.clientId).name}</div>
+                                    </div>
+                                    <div style={{flex: 1.5, textAlign: "right"}}>
+                                        <h4>Remitente:</h4>
+                                        <div style={{fontWeight: "600", color: "#000", fontSize: "16px"}}>Camilo Ortiz Carvajal</div>
+                                        <div>CC. 1.006.128.276</div>
+                                        <div>Diseñador Gráfico</div>
+                                        <div>+57 315 0011 929</div>
+                                        <div>ortizcarvajalcamilo@gmail.com</div>
+                                        <div>https://bento.me/camiloc-ortiz</div>
+                                    </div>
+                                </div>
+
+                                <table className="invoice-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Descripción</th>
+                                            <th style={{textAlign: "right", width: "150px"}}>Valor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {printInvoice.items.map((item, idx) => (
+                                            <tr key={idx}>
+                                                <td>{item.videoName}</td>
+                                                <td style={{textAlign: "right"}}>{formatCOP(item.price)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+
+                                <div className="invoice-total">
+                                    <div className="invoice-total-box">
+                                        <div style={{color: "#666", fontSize: "14px", marginBottom: "4px"}}>Valor total a cobrar</div>
+                                        <div style={{fontSize: "24px", fontWeight: "700", color: "#000"}}>{formatCOP(printInvoice.total)}</div>
+                                        <div style={{fontSize: "12px", color: "#888", marginTop: "8px", fontStyle: "italic"}}>{numeroALetras(printInvoice.total)}</div>
+                                        <div style={{fontSize: "10px", color: "#aaa", marginTop: "4px"}}>*Valor sujeto a retención en la fuente si aplica</div>
+                                    </div>
+                                </div>
+
+                                <div className="invoice-footer">
+                                    <div>
+                                        <h4 style={{margin: "0 0 8px 0", color: "#000", fontSize: "14px"}}>Forma de Pago</h4>
+                                        <div>Transferencia Bancaria</div>
+                                        <div>Bancolombia - Ahorros</div>
+                                        <div style={{fontWeight: "600"}}>91275234724</div>
+                                        <div>Camilo Ortiz Carvajal</div>
+                                    </div>
+                                    <div className="invoice-signature">
+                                        <div style={{fontFamily: "'Space Grotesk', sans-serif", fontSize: "28px", color: "#999", marginBottom: "8px", borderBottom: "1px solid #CCC", display:"inline-block", padding:"0 20px"}}>
+                                            AMILO ORTIZ
+                                        </div>
+                                        <div style={{fontWeight: "600", color: "#000", fontSize: "14px"}}>Camilo Ortiz Carvajal</div>
+                                        <div style={{color: "#666"}}>Diseñador Gráfico</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                      </div>
                     </div>
-                  );
-                }
-              })}
+                )}
+                {/* END PRINT OVERLAY */}
 
-              <hr style={{border: "none", borderTop: "1px dashed var(--border-color)", margin: "40px 0"}}/>
-
-              {/* PERSONAL BRAND */}
-              <div className="client-card">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <span className="glow-tag glow-purple">Fixed Project</span>
-                    <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>Personal Brand</h2>
-                  </div>
-                  <a href="https://www.instagram.com/camiloo_oortiz/" target="_blank" style={{ color: "var(--accent)", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>@camiloo_oortiz ↗</a>
+                <div className="page-header-flex" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
+                    <h1 className="font-title" style={{ fontSize: "32px", margin: 0 }}>Administración Financiera</h1>
+                    <input type="month" className="modal-input" style={{width: "auto", marginBottom: 0}} value={filterMonth} onChange={e => setFilterMonth(e.target.value)} />
                 </div>
-                
-                <TaskList list={tasks.filter(t => t.category === 'personal')} />
-                <TaskInput onAdd={(text) => addTask(text, 'personal')} placeholder="+ New personal brand task..." />
-                
-                <EditableTextarea 
-                    value={marcaPersonalIdeas} 
-                    onSave={updateMarcaPersonalIdeas}
-                    placeholder="Write your content ideas or inspiration here. (This text is permanent)..."
-                    className="ideas-textarea"
-                />
-              </div>
 
-              {/* ORGANIZATION */}
-              <div className="client-card">
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <span className="glow-tag glow-red">Organization</span>
-                  <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>Administrative Management</h2>
+                <div className="kpi-grid">
+                    <div className="card" style={{ marginBottom: 0, padding: "20px" }}>
+                        <div style={{ color: "var(--text-muted)", fontSize: "13px", marginBottom: "8px" }}>Ingresos Fijos (Salario)</div>
+                        <EditableInput type="number" value={fixedValue} onSave={(val) => updateFixedIncome(filterMonth, val)} style={{ fontSize: "24px", fontWeight: "700", background: "transparent", border: "1px dashed var(--border-color)", color: "#FFF", width: "100%" }} placeholder="Añadir valor..." />
+                    </div>
+                    <div className="card" style={{ marginBottom: 0, padding: "20px" }}>
+                        <div style={{ color: "var(--text-muted)", fontSize: "13px", marginBottom: "8px" }}>Por Cobrar (Borrador/Enviada)</div>
+                        <div className="font-title" style={{ fontSize: "24px", color: "#ff9f43" }}>{formatCOP(pendingValue)}</div>
+                    </div>
+                    <div className="card" style={{ marginBottom: 0, padding: "20px" }}>
+                        <div style={{ color: "var(--text-muted)", fontSize: "13px", marginBottom: "8px" }}>Total Cobrado del Mes</div>
+                        <div className="font-title" style={{ fontSize: "24px", color: "#2ed573" }}>{formatCOP(collectedValue)}</div>
+                    </div>
+                    <div className="card" style={{ marginBottom: 0, padding: "20px", border: "1px solid var(--accent)" }}>
+                        <div style={{ color: "var(--accent)", fontSize: "13px", marginBottom: "8px", fontWeight: 600 }}>Proyección Total del Mes</div>
+                        <div className="font-title" style={{ fontSize: "24px", color: "#FFF" }}>{formatCOP(projectedValue)}</div>
+                    </div>
                 </div>
-                <TaskList list={tasks.filter(t => t.category === 'admin')} />
-                <TaskInput onAdd={(text) => addTask(text, 'admin')} placeholder="+ New administrative task, emails, finances..." />
-              </div>
+
+                <h2 className="font-title" style={{ fontSize: "20px", marginBottom: "20px" }}>Cuentas de Cobro / Clientes Variables</h2>
+                {monthInvoices.length === 0 && <div style={{ color: "var(--text-muted)", fontStyle: "italic" }}>No hay cuentas de cobro generadas este mes. Se crearán automáticamente al entregar videos.</div>}
+                
+                <div className="grid-cards">
+                    {monthInvoices.map(inv => (
+                        <div key={inv.id} className="card" style={{ padding: "24px" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px" }}>
+                                <span className={`glow-tag ${inv.status==='Borrador'?'glow-cyan':inv.status==='Enviada'?'glow-orange':'glow-green'}`}>{inv.status}</span>
+                                <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>#{inv.number || '001'}</span>
+                            </div>
+                            <h3 className="font-title" style={{ margin: "0 0 4px 0", fontSize: "18px" }}>{getClient(inv.clientId).name}</h3>
+                            <div style={{ color: "var(--text-muted)", fontSize: "13px", marginBottom: "16px" }}>{inv.items.length} entregables</div>
+                            
+                            <div className="font-title" style={{ fontSize: "28px", marginBottom: "24px", color: "#FFF" }}>{formatCOP(inv.total)}</div>
+                            
+                            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                                <button onClick={() => setPrintInvoice(inv)} style={{ width: "100%", background: "var(--bg-main)", color: "#FFF", border: "1px solid var(--border-color)", padding: "10px", borderRadius: "8px", cursor: "pointer", fontSize: "13px" }}>📄 Ver / Exportar</button>
+                                
+                                {inv.status === 'Borrador' && <button onClick={() => updateInvoiceStatus(inv.id, 'Enviada')} style={{ width: "100%", background: "var(--accent)", color: "#FFF", border: "none", padding: "10px", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}>Marcar como Enviada</button>}
+                                {inv.status === 'Enviada' && <button onClick={() => updateInvoiceStatus(inv.id, 'Pagada')} style={{ width: "100%", background: "#2ed573", color: "#000", border: "none", padding: "10px", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}>Marcar como Pagada</button>}
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
-
-            {/* COLUMN 2: FIXED RIGHT SIDEBAR (NOTEPAD) */}
-            <div className="client-card clients-sidebar">
-               <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
-                 <span className="glow-tag glow-green">Notepad</span>
-                 <h2 className="font-title" style={{ margin: 0, fontSize: "20px" }}>Quick Ideas</h2>
-               </div>
-               <EditableTextarea 
-                    value={generalNotes} 
-                    onSave={updateGeneralNotes}
-                    placeholder="Write your loose ideas, upcoming tasks, or content inspiration here. This section is automatically saved and will stay here as you scroll..."
-                    className="ideas-textarea"
-                    style={{ marginTop: 0, borderTop: "none", minHeight: "50vh", flex: 1 }}
-                />
-            </div>
-
-          </div> {/* End Clients Layout */}
-
-          {/* Modal Overlay */}
-          <div className={`modal-overlay ${isModalOpen ? 'open' : ''}`} onClick={() => setIsModalOpen(false)}>
-            <div className="modal-card" onClick={e => e.stopPropagation()}>
-              <h2 className="font-title" style={{ margin: "0 0 24px 0", fontSize: "22px" }}>Create New Client</h2>
-              
-              <label style={{display:"block", marginBottom: "8px", fontSize:"13px", color:"var(--text-muted)"}}>Client/Agency Name *</label>
-              <input type="text" className="modal-input" value={newClientName} onChange={e => setNewClientName(e.target.value)} placeholder="E.g. John Doe" autoFocus />
-              
-              <label style={{display:"block", marginBottom: "8px", fontSize:"13px", color:"var(--text-muted)"}}>Link (Web/Instagram) Optional</label>
-              <input type="text" className="modal-input" value={newClientUrl} onChange={e => setNewClientUrl(e.target.value)} placeholder="https://..." />
-              
-              <label style={{display:"block", marginBottom: "8px", fontSize:"13px", color:"var(--text-muted)"}}>Workflow Type</label>
-              <select className="modal-input" value={newClientType} onChange={e => setNewClientType(e.target.value)} style={{cursor: "pointer"}}>
-                <option value="Estándar">Standard (Simple Checklist)</option>
-                <option value="Agencia">Agency (Multi-brand)</option>
-              </select>
-
-              <div style={{display: "flex", gap: "12px", marginTop: "24px"}}>
-                <button onClick={() => setIsModalOpen(false)} style={{flex: 1, padding: "12px", background: "transparent", border: "1px solid var(--border-color)", color: "var(--text-main)", borderRadius: "10px", cursor: "pointer"}}>Cancel</button>
-                <button onClick={handleAddClient} style={{flex: 1, padding: "12px", background: "var(--accent)", border: "none", color: "#FFF", borderRadius: "10px", cursor: "pointer", fontWeight: "600"}}>Save</button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      );
+        );
     }
 
     const root = ReactDOM.createRoot(document.getElementById('root'));
