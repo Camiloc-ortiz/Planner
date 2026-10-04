@@ -221,7 +221,7 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .dot{width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
 
 /* ───────── Accordion ───────── */
-.acc{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);margin-bottom:14px;overflow:hidden}
+.acc{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);margin-bottom:14px}
 .acc-head{
   display:flex;align-items:center;gap:14px;padding:16px 20px;width:100%;text-align:left;
   transition:background .14s;
@@ -231,6 +231,33 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .acc-chev.open{transform:rotate(90deg)}
 .acc-name{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:-.01em}
 .acc-body{padding:4px 18px 18px;border-top:1px solid var(--line-soft)}
+
+
+.acc-head{border-radius:var(--r-lg)}
+.acc.open .acc-head{border-radius:var(--r-lg) var(--r-lg) 0 0}
+.vbar{display:flex;align-items:center;gap:8px;padding:12px 0 10px;position:relative}
+.tb-wrap{position:relative}
+.tb-on{color:var(--blue);border-color:rgba(61,155,255,.4);background:rgba(61,155,255,.1)}
+.vcount{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+.pop{position:absolute;z-index:70;top:calc(100% + 6px);left:0;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:14px;padding:12px;box-shadow:0 24px 60px rgba(0,0,0,.65)}
+.pop .select,.pop .input{width:auto;padding:6px 10px;font-size:13px}
+.pop-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.pop-lbl{font-size:12px;color:var(--dim);min-width:62px}
+.pop-hint{margin:0 0 10px;font-size:12.5px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border-radius:99px;padding:3px 11px;font-size:12px;border:1px solid;opacity:.4;transition:opacity .12s}
+.chip.on{opacity:1}
+.hcell{position:relative;min-width:0}
+.hcell.right{display:flex;justify-content:flex-end}
+.hbtn{display:flex;align-items:center;gap:5px;color:var(--dim);font-size:11.5px;padding:3px 6px;margin-left:-6px;border-radius:6px;white-space:nowrap}
+.hbtn:hover,.hbtn.on{background:var(--surface-2);color:var(--text)}
+.hbtn svg{width:12px;height:12px;flex:none;stroke-width:2.6;color:var(--blue)}
+.hbtn .dot{color:var(--blue)}
+.hmenu{min-width:220px;padding:6px;top:calc(100% + 4px)}
+.mi{display:flex;gap:9px;align-items:center;width:100%;padding:8px 10px;border-radius:8px;text-align:left;font-size:13px}
+.mi:hover{background:var(--surface-3)}
+.mi svg{width:14px;height:14px;flex:none;stroke-width:2.2;color:var(--muted)}
 
 /* ───────── Client cards ───────── */
 .client-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px}
@@ -607,6 +634,11 @@ const I = {
   calc:  <Ico d={<><rect x="4" y="2.5" width="16" height="19" rx="2.5"/><path d="M8 7h8"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16.5h.01M12 16.5h.01M15.5 16.5h.01"/></>} />,
   undo:  <Ico d={<><path d="M3 10h11a5 5 0 010 10h-4"/><path d="M7 6l-4 4 4 4"/></>} />,
 };
+
+I.filter = <Ico d={<path d="M3 5h18l-7 8v6l-4 2v-8L3 5z"/>} />;
+I.sort = <Ico d={<><path d="M7 4v16M3 16l4 4 4-4"/><path d="M17 20V4M13 8l4-4 4 4"/></>} />;
+I.arrowUp = <Ico d={<path d="M12 19V5M6 11l6-6 6 6"/>} />;
+I.arrowDown = <Ico d={<path d="M12 5v14M6 13l6 6 6-6"/>} />;
 
 /* ════════════════ Piezas reutilizables ════════════════ */
 function Cell({ value, onSave, type = 'text', placeholder, className = '' }) {
@@ -1003,6 +1035,267 @@ function ClientsView({ db, actions }) {
   );
 }
 
+/* ════════════════ Filtros y orden (estilo Notion) ════════════════ */
+const COLS = [
+  { k:'nombre', l:'Nombre del video', t:'text' },
+  { k:'marca', l:'Marca', t:'text', ag:true },
+  { k:'fechaRecepcion', l:'Recepción', t:'date' },
+  { k:'fechaLimite', l:'Fecha límite', t:'date' },
+  { k:'estado', l:'Estado', t:'select' },
+  { k:'fechaEntrega', l:'Entrega', t:'date' },
+  { k:'tarifa', l:'Tarifa', t:'num' },
+  { k:'notas', l:'Notas', t:'text' },
+];
+const VACIO = [['vacio','está vacío'],['no_vacio','no está vacío']];
+const OPS = {
+  text: [['contiene','contiene'],['no_contiene','no contiene'],['es','es'],['no_es','no es'], ...VACIO],
+  num: [['eq','='],['ne','≠'],['gt','>'],['gte','≥'],['lt','<'],['lte','≤'], ...VACIO],
+  select: [['en','es alguno de'],['no_en','no es ninguno de']],
+  date: [['es','es'],['antes','antes de'],['despues','después de'],['entre','entre'],['mes','mes específico'],
+         ['este_mes','este mes'],['mes_pasado','mes pasado'],['esta_semana','esta semana'], ...VACIO],
+};
+const SORT_LABELS = {
+  text: ['A → Z','Z → A'],
+  date: ['Más antiguo primero','Más reciente primero'],
+  num: ['Menor a mayor','Mayor a menor'],
+  select: ['Según flujo de trabajo','Flujo inverso'],
+};
+const NO_VALUE = ['vacio','no_vacio','este_mes','mes_pasado','esta_semana'];
+const isoD = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const weekRange = () => {
+  const n = new Date();
+  const a = new Date(n.getFullYear(), n.getMonth(), n.getDate() - ((n.getDay() + 6) % 7));
+  const b = new Date(a.getFullYear(), a.getMonth(), a.getDate() + 6);
+  return [isoD(a), isoD(b)];
+};
+const blankVal = t => ({ v: t === 'select' ? [] : '', v2: '' });
+const newRule = col => ({ id: uid(), k: col.k, op: OPS[col.t][0][0], ...blankVal(col.t) });
+
+function matchRule(video, r, col) {
+  const val = video[col.k];
+  const empty = val == null || val === '';
+  if (r.op === 'vacio') return empty;
+  if (r.op === 'no_vacio') return !empty;
+  if (col.t === 'select') {
+    if (!r.v.length) return true;
+    return r.op === 'en' ? r.v.includes(val) : !r.v.includes(val);
+  }
+  if (col.t === 'text') {
+    const q = String(r.v || '').trim().toLowerCase();
+    if (!q) return true;
+    const t = String(val || '').toLowerCase();
+    return r.op === 'contiene' ? t.includes(q) : r.op === 'no_contiene' ? !t.includes(q) : r.op === 'es' ? t === q : t !== q;
+  }
+  if (col.t === 'num') {
+    if (r.v === '') return true;
+    const n = toNum(val), q = toNum(r.v);
+    return { eq: n === q, ne: n !== q, gt: n > q, gte: n >= q, lt: n < q, lte: n <= q }[r.op];
+  }
+  const mes = currentMonth();
+  if (r.op === 'este_mes') return !empty && val.slice(0, 7) === mes;
+  if (r.op === 'mes_pasado') return !empty && val.slice(0, 7) === prevMonth(mes);
+  if (r.op === 'esta_semana') { const [a, b] = weekRange(); return !empty && val >= a && val <= b; }
+  if (r.op === 'mes') return !r.v || (!empty && val.slice(0, 7) === r.v);
+  if (r.op === 'entre') {
+    if (!r.v || !r.v2) return true;
+    const [a, b] = [r.v, r.v2].sort();
+    return !empty && val >= a && val <= b;
+  }
+  if (!r.v) return true;
+  if (empty) return false;
+  return r.op === 'es' ? val === r.v : r.op === 'antes' ? val < r.v : val > r.v;
+}
+
+function applyView(videos, view, cols) {
+  const byK = Object.fromEntries(cols.map(c => [c.k, c]));
+  let out = videos.filter(v => view.f.every(r => !byK[r.k] || matchRule(v, r, byK[r.k])));
+  const sorts = view.s.filter(x => byK[x.k]);
+  if (!sorts.length) return out;
+  const cmp = (a, b, x) => {
+    const col = byK[x.k], p = a[x.k], q = b[x.k];
+    const ep = p == null || p === '', eq = q == null || q === '';
+    if (ep || eq) return ep && eq ? 0 : ep ? 1 : -1; // los vacíos siempre quedan al final
+    let d;
+    if (col.t === 'num') d = toNum(p) - toNum(q);
+    else if (col.t === 'select') d = ESTADOS.indexOf(p) - ESTADOS.indexOf(q);
+    else if (col.t === 'date') d = p < q ? -1 : p > q ? 1 : 0;
+    else d = String(p).localeCompare(String(q), 'es', { sensitivity: 'base', numeric: true });
+    return x.dir === 'desc' ? -d : d;
+  };
+  return [...out].sort((a, b) => { for (const x of sorts) { const d = cmp(a, b, x); if (d) return d; } return 0; });
+}
+
+function useView(id) {
+  const key = 'erp-view-' + id;
+  const [v, setV] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(key)) || { f: [], s: [] }; } catch (e) { return { f: [], s: [] }; }
+  });
+  useEffect(() => { try { localStorage.setItem(key, JSON.stringify(v)); } catch (e) {} }, [v]);
+  return [v, setV];
+}
+
+function useOutside(ref, on) {
+  useEffect(() => {
+    const h = e => { if (ref.current && !ref.current.contains(e.target)) on(); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [ref, on]);
+}
+
+function ValueEditor({ col, r, set }) {
+  if (NO_VALUE.includes(r.op)) return null;
+  if (col.t === 'select') return (
+    <div className="chips">
+      {ESTADOS.map(e => {
+        const on = r.v.includes(e);
+        return <button key={e} className={'chip ' + ESTADO_CLASS[e] + (on ? ' on' : '')}
+          onClick={() => set({ v: on ? r.v.filter(x => x !== e) : [...r.v, e] })}>{e}</button>;
+      })}
+    </div>
+  );
+  if (col.t === 'date') {
+    if (r.op === 'mes') return <input className="input" type="month" value={r.v} onChange={e => set({ v: e.target.value })} />;
+    if (r.op === 'entre') return (
+      <>
+        <input className="input" type="date" value={r.v} onChange={e => set({ v: e.target.value })} />
+        <span className="pop-lbl" style={{ minWidth: 0 }}>y</span>
+        <input className="input" type="date" value={r.v2} onChange={e => set({ v2: e.target.value })} />
+      </>
+    );
+    return <input className="input" type="date" value={r.v} onChange={e => set({ v: e.target.value })} />;
+  }
+  return <input className="input" style={{ width: 150 }} type={col.t === 'num' ? 'number' : 'text'}
+    placeholder="Valor…" value={r.v} onChange={e => set({ v: e.target.value })} />;
+}
+
+function FilterPanel({ cols, rules, onChange }) {
+  const byK = Object.fromEntries(cols.map(c => [c.k, c]));
+  const set = (id, p) => onChange(rules.map(r => r.id === id ? { ...r, ...p } : r));
+  return (
+    <div className="pop" style={{ minWidth: 600 }}>
+      {rules.length === 0 && <p className="pop-hint">Sin filtros. Los videos deben cumplir todas las reglas a la vez.</p>}
+      {rules.map((r, i) => {
+        const col = byK[r.k] || cols[0];
+        return (
+          <div className="pop-row" key={r.id}>
+            <span className="pop-lbl">{i === 0 ? 'Donde' : 'Y'}</span>
+            <select className="select" value={col.k}
+              onChange={e => { const c = byK[e.target.value]; set(r.id, { k: c.k, op: OPS[c.t][0][0], ...blankVal(c.t) }); }}>
+              {cols.map(c => <option key={c.k} value={c.k}>{c.l}</option>)}
+            </select>
+            <select className="select" value={r.op}
+              onChange={e => {
+                const op = e.target.value;
+                const keep = col.t !== 'select' && r.op !== 'mes' && op !== 'mes';
+                set(r.id, keep ? { op } : { op, ...blankVal(col.t) });
+              }}>
+              {OPS[col.t].map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+            </select>
+            <ValueEditor col={col} r={r} set={p => set(r.id, p)} />
+            <button className="icon-btn danger" title="Quitar filtro"
+              onClick={() => onChange(rules.filter(x => x.id !== r.id))}>{I.trash}</button>
+          </div>
+        );
+      })}
+      <button className="btn btn-sm" onClick={() => onChange([...rules, newRule(cols[0])])}>{I.plus} Añadir filtro</button>
+    </div>
+  );
+}
+
+function SortPanel({ cols, rules, onChange }) {
+  const byK = Object.fromEntries(cols.map(c => [c.k, c]));
+  const set = (id, p) => onChange(rules.map(r => r.id === id ? { ...r, ...p } : r));
+  const free = cols.find(c => !rules.some(r => r.k === c.k));
+  return (
+    <div className="pop" style={{ minWidth: 470 }}>
+      {rules.length === 0 && <p className="pop-hint">Sin orden: se muestran en el orden en que los registraste.</p>}
+      {rules.map((r, i) => {
+        const col = byK[r.k] || cols[0];
+        const [a, d] = SORT_LABELS[col.t];
+        return (
+          <div className="pop-row" key={r.id}>
+            <span className="pop-lbl">{i === 0 ? 'Ordenar por' : 'Luego por'}</span>
+            <select className="select" value={col.k} onChange={e => set(r.id, { k: e.target.value })}>
+              {cols.map(c => <option key={c.k} value={c.k}>{c.l}</option>)}
+            </select>
+            <select className="select" value={r.dir} onChange={e => set(r.id, { dir: e.target.value })}>
+              <option value="asc">{a}</option>
+              <option value="desc">{d}</option>
+            </select>
+            <button className="icon-btn danger" title="Quitar orden"
+              onClick={() => onChange(rules.filter(x => x.id !== r.id))}>{I.trash}</button>
+          </div>
+        );
+      })}
+      <button className="btn btn-sm" disabled={!free}
+        onClick={() => onChange([...rules, { id: uid(), k: free.k, dir: 'asc' }])}>{I.plus} Añadir orden</button>
+    </div>
+  );
+}
+
+function ViewBar({ cols, view, setView, panel, setPanel, total, shown }) {
+  const ref = useRef(null);
+  useOutside(ref, () => setPanel(null));
+  const nf = view.f.length, ns = view.s.length;
+  const toggle = p => setPanel(panel === p ? null : p);
+  return (
+    <div className="vbar" ref={ref}>
+      <div className="tb-wrap">
+        <button className={'btn btn-sm' + (nf ? ' tb-on' : '')} onClick={() => toggle('filter')}>
+          {I.filter} Filtrar{nf ? ` · ${nf}` : ''}
+        </button>
+        {panel === 'filter' && <FilterPanel cols={cols} rules={view.f} onChange={f => setView({ ...view, f })} />}
+      </div>
+      <div className="tb-wrap">
+        <button className={'btn btn-sm' + (ns ? ' tb-on' : '')} onClick={() => toggle('sort')}>
+          {I.sort} Ordenar{ns ? ` · ${ns}` : ''}
+        </button>
+        {panel === 'sort' && <SortPanel cols={cols} rules={view.s} onChange={s => setView({ ...view, s })} />}
+      </div>
+      {(nf > 0 || ns > 0) && (
+        <button className="btn btn-sm btn-ghost" onClick={() => setView({ f: [], s: [] })}>{I.x} Restablecer</button>
+      )}
+      <span style={{ flex: 1 }} />
+      <span className="vcount">
+        {nf ? `${shown} de ${total}` : total} video{total === 1 ? '' : 's'}
+      </span>
+    </div>
+  );
+}
+
+function HeadCell({ col, view, setView, openFilter }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useOutside(ref, () => setOpen(false));
+  const cur = view.s.find(x => x.k === col.k);
+  const filtered = view.f.some(x => x.k === col.k);
+  const [la, ld] = SORT_LABELS[col.t];
+  const sortTo = dir => {
+    setView({ ...view, s: cur && cur.dir === dir ? view.s.filter(x => x.k !== col.k) : [{ id: uid(), k: col.k, dir }] });
+    setOpen(false);
+  };
+  return (
+    <div className={'hcell' + (col.t === 'num' ? ' right' : '')} ref={ref}>
+      <button className={'hbtn' + (cur || filtered ? ' on' : '')} onClick={() => setOpen(!open)}>
+        {col.l}
+        {cur && (cur.dir === 'asc' ? I.arrowUp : I.arrowDown)}
+        {filtered && <i className="dot" />}
+      </button>
+      {open && (
+        <div className="pop hmenu" style={col.t === 'num' ? { left: 'auto', right: 0 } : null}>
+          <button className="mi" onClick={() => sortTo('asc')}>{I.arrowUp} Ordenar: {la}{cur && cur.dir === 'asc' ? ' ✓' : ''}</button>
+          <button className="mi" onClick={() => sortTo('desc')}>{I.arrowDown} Ordenar: {ld}{cur && cur.dir === 'desc' ? ' ✓' : ''}</button>
+          <button className="mi" onClick={() => {
+            setView({ ...view, f: [...view.f, newRule(col)] });
+            openFilter();
+            setOpen(false);
+          }}>{I.filter} Filtrar por esta columna</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ════════════════ Vista: Registro de contenidos ════════════════ */
 function ContentView({ db, actions }) {
   const activos = db.clients.filter(c => c.activo);
@@ -1041,6 +1334,10 @@ function ClientAccordion({ client, db, actions, open, onToggle }) {
   const videos = db.videos.filter(v => v.clientId === client.id);
   const agencia = client.tipoFlujo === 'agencia';
   const pend = videos.filter(v => PENDIENTES.includes(v.estado)).length;
+  const [view, setView] = useView(client.id);
+  const [panel, setPanel] = useState(null);
+  const vcols = COLS.filter(c => agencia || !c.ag);
+  const shown = applyView(videos, view, vcols);
 
   const cols = agencia
     ? 'minmax(180px,2fr) minmax(110px,1fr) 128px 128px 158px 128px 118px minmax(130px,1.3fr) 34px'
@@ -1057,7 +1354,7 @@ function ClientAccordion({ client, db, actions, open, onToggle }) {
   };
 
   return (
-    <div className="acc">
+    <div className={'acc' + (open ? ' open' : '')}>
       <button className="acc-head" onClick={onToggle}>
         <span className={'acc-chev' + (open ? ' open' : '')} style={{ display:'flex' }}>
           {React.cloneElement(I.chev, { width:16, height:16, strokeWidth:2.2 })}
@@ -1078,19 +1375,24 @@ function ClientAccordion({ client, db, actions, open, onToggle }) {
             <Empty title="Sin videos todavía">Añade la primera pieza de este cliente.</Empty>
           ) : (
             <>
+              <ViewBar cols={vcols} view={view} setView={setView} panel={panel} setPanel={setPanel}
+                total={videos.length} shown={shown.length} />
               <div className="pill-head" style={{ gridTemplateColumns: cols }}>
-                <div>Nombre del video</div>
-                {agencia && <div>Marca</div>}
-                <div>Recepción</div>
-                <div>Fecha límite</div>
-                <div>Estado</div>
-                <div>Entrega</div>
-                <div style={{ textAlign:'right' }}>Tarifa</div>
-                <div>Notas</div>
+                {vcols.map(c => (
+                  <HeadCell key={c.k} col={c} view={view} setView={setView} openFilter={() => setPanel('filter')} />
+                ))}
                 <div />
               </div>
 
-              {videos.map(v => (
+              {shown.length === 0 && (
+                <Empty title="Ningún video coincide con los filtros">
+                  <div style={{ marginTop: 10 }}>
+                    <button className="btn btn-sm" onClick={() => setView({ ...view, f: [] })}>Limpiar filtros</button>
+                  </div>
+                </Empty>
+              )}
+
+              {shown.map(v => (
                 <div key={v.id} className="pill-row" style={{ gridTemplateColumns: cols }}>
                   <Cell value={v.nombre} placeholder="Nombre del video"
                     onSave={val => actions.updateVideo(v.id, { nombre: val })} />
