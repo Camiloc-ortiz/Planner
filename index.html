@@ -378,12 +378,21 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<div id="root">
+  <!-- Estado de carga visual mientras Babel compila el código -->
+  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: var(--muted); font-family: var(--sans);">
+    <h2 style="color: var(--text);">Iniciando aplicación...</h2>
+    <p>Si este mensaje no desaparece, verifica que tu AdBlocker no esté bloqueando 'unpkg.com'.</p>
+  </div>
+</div>
+
+<!-- 1. Quitamos 'crossorigin' para que funcione al hacer doble clic en local -->
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script type="text/babel" data-presets="react">
-const { useState, useEffect, useMemo, useRef, useCallback } = React;
+
+<!-- 2. Añadimos 'env' a los presets para procesar la sintaxis de JS moderna -->
+<script type="text/babel" data-presets="env,react">
 
 /* ════════════════ Constantes ════════════════ */
 const STORAGE_KEY = 'erp-postpro-v1';
